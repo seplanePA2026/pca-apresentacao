@@ -1,0 +1,144 @@
+/* =========================================================
+   PCA 2027 — módulo independente de planejamento de demandas
+   ========================================================= */
+.pca-app { --pca-blue:#0e5aa7; --pca-green:#20865f; --pca-red:#b94d55; --pca-amber:#c98518; }
+
+.pca-toolbar{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:10px;margin-bottom:14px;flex-wrap:wrap}
+.pca-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.pca-tab{border:0;background:transparent;color:var(--muted);font-weight:760;font-size:12px;padding:9px 12px;border-radius:11px;cursor:pointer}
+.pca-tab:hover{background:var(--surface2);color:var(--text)}
+.pca-tab.active{background:#e8f1fb;color:var(--blue)}
+.pca-actions{display:flex;gap:7px;flex-wrap:wrap}
+.btn-danger{color:var(--red);border-color:#edd1d4;background:#fff}
+.btn-danger:hover{background:#fff6f6}
+.btn-quiet{background:transparent}
+
+.pca-filter-panel{padding:16px;margin-bottom:14px}
+.pca-filter-grid{display:grid;grid-template-columns:1.25fr 1.1fr 1.1fr .75fr .75fr .8fr;gap:9px}
+.pca-filter-foot{display:flex;align-items:center;justify-content:flex-start;gap:12px;margin-top:11px;flex-wrap:wrap}
+.pca-filter-status{font-size:11px;color:var(--muted)}
+
+.pca-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.pca-metric{padding:17px 18px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 7px 22px rgba(20,47,80,.045)}
+.pca-metric-label{font-size:11px;color:var(--muted);font-weight:720}
+.pca-metric-value{font-size:22px;font-weight:840;margin-top:7px;letter-spacing:-.025em}
+.pca-metric-sub{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4}
+.pca-metric .track{height:7px;margin-top:10px}
+
+.pca-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pca-card{padding:18px}
+.pca-card-wide{grid-column:1/-1}
+.pca-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.pca-card-head h2,.pca-card-head h3{font-size:16px;margin:0}
+.pca-card-head p{font-size:11px;color:var(--muted);margin:4px 0 0;line-height:1.45}
+
+.pca-quarter-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pca-quarter{border:1px solid var(--line);border-radius:15px;padding:13px;background:var(--surface2)}
+.pca-quarter-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pca-quarter-name{font-size:12px;font-weight:800}
+.pca-quarter-count{font-size:10px;color:var(--muted)}
+.pca-quarter-value{font-size:14px;font-weight:800;margin-top:8px}
+.pca-quarter-pct{font-size:10px;color:var(--muted);margin-top:3px}
+
+.pca-priority-list{display:grid;gap:10px}
+.pca-priority-row{display:grid;grid-template-columns:78px 1fr auto;align-items:center;gap:10px}
+.pca-priority-label{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:760}
+.pca-priority-dot{width:8px;height:8px;border-radius:50%}
+.pca-priority-dot.high{background:var(--red)}
+.pca-priority-dot.medium{background:var(--amber)}
+.pca-priority-dot.low{background:var(--green)}
+.pca-priority-track{height:8px;background:#e7edf4;border-radius:999px;overflow:hidden}
+.pca-priority-fill{height:100%;border-radius:999px;background:var(--blue)}
+.pca-priority-value{font-size:11px;color:var(--muted);white-space:nowrap}
+
+.pca-overview-table,.pca-items-table,.pca-sector-table{width:100%;border-collapse:collapse}
+.pca-overview-wrap,.pca-items-wrap,.pca-sector-wrap{overflow:auto;border:1px solid var(--line);border-radius:17px;background:#fff}
+.pca-overview-table{min-width:900px}.pca-items-table{min-width:1280px}.pca-sector-table{min-width:720px}
+.pca-overview-table th,.pca-overview-table td,.pca-items-table th,.pca-items-table td,.pca-sector-table th,.pca-sector-table td{padding:12px 13px;border-bottom:1px solid #e9eef4;text-align:left;font-size:12px;vertical-align:middle}
+.pca-overview-table th,.pca-items-table th,.pca-sector-table th{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.045em;background:#f7f9fc;position:sticky;top:0;z-index:1}
+.pca-overview-table td.num,.pca-overview-table th.num,.pca-items-table td.num,.pca-items-table th.num,.pca-sector-table td.num,.pca-sector-table th.num{text-align:right}
+.pca-overview-table tbody tr:last-child td,.pca-items-table tbody tr:last-child td,.pca-sector-table tbody tr:last-child td{border-bottom:0}
+.pca-overview-table tbody tr:hover,.pca-items-table tbody tr:hover,.pca-sector-table tbody tr:hover{background:#fbfcfe}
+.pca-org-name{font-weight:750;line-height:1.35}.pca-org-code{font-size:10px;color:var(--blue);font-weight:850;margin-bottom:3px}
+
+.pca-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:820;white-space:nowrap}
+.pca-badge.high{background:#f9eeee;color:var(--red)}
+.pca-badge.medium{background:#fff5e5;color:#98660f}
+.pca-badge.low{background:#eaf5ef;color:var(--green)}
+.pca-badge.yes{background:#eaf5ef;color:var(--green)}
+.pca-badge.no{background:#f9eeee;color:var(--red)}
+.pca-badge.pending{background:#eef3f8;color:#60728b}
+.pca-badge.quarter{background:#e8f1fb;color:var(--blue)}
+.pca-badge.type{background:#f1f4f8;color:#52667f;font-weight:730}
+
+.pca-row-actions{display:flex;gap:5px;justify-content:flex-end;white-space:nowrap}
+.pca-icon-btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 9px;cursor:pointer;font-size:11px;font-weight:720}
+.pca-icon-btn:hover{background:var(--surface2)}
+.pca-icon-btn.danger{color:var(--red)}
+.pca-dfd{font-weight:820;color:var(--blue);white-space:nowrap}
+.pca-desc{font-weight:690;line-height:1.35;min-width:260px}
+.pca-subline{font-size:10px;color:var(--muted);margin-top:3px}
+
+.pca-empty{padding:44px 20px;text-align:center;border:1px dashed #cbd7e5;border-radius:18px;background:#fff;color:var(--muted)}
+.pca-empty strong{display:block;color:var(--text);font-size:14px;margin-bottom:5px}
+.pca-empty .btn{margin-top:14px}
+
+.pca-sector-layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:14px}
+.pca-sector-editor{padding:18px;align-self:start;position:sticky;top:90px}
+.pca-sector-editor h2{font-size:16px;margin:0 0 4px}.pca-sector-editor p{font-size:11px;color:var(--muted);line-height:1.5;margin:0 0 15px}
+.pca-sector-editor .field{margin-bottom:11px}
+.pca-sector-list-panel{padding:18px}
+.pca-sector-name{font-weight:730}
+
+.pca-modal{position:fixed;inset:0;z-index:100;background:rgba(8,24,43,.46);backdrop-filter:blur(5px);display:flex;align-items:center;justify-content:center;padding:20px}
+.pca-dialog{width:min(980px,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 90px rgba(8,24,43,.22)}
+.pca-dialog-head{position:sticky;top:0;z-index:3;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.pca-dialog-head h2{font-size:18px;margin:0}.pca-dialog-head p{font-size:11px;color:var(--muted);margin:4px 0 0}
+.pca-dialog-body{padding:20px}
+.pca-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.pca-form-grid .span-2{grid-column:1/-1}
+.pca-form-grid textarea.control{min-height:92px;resize:vertical;line-height:1.45}
+.pca-help{font-size:10px;color:var(--muted);margin:5px 2px 0;line-height:1.4}
+.pca-total-box{border:1px solid #cfe0f1;background:#f5f9fe;border-radius:15px;padding:13px 14px}
+.pca-total-box .label{font-size:10px;color:var(--muted);font-weight:760}.pca-total-box .value{font-size:21px;font-weight:850;color:var(--blue);margin-top:5px}
+.pca-dialog-foot{position:sticky;bottom:0;z-index:3;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:14px 20px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.pca-field-error{font-size:10px;color:var(--red);margin-top:4px;display:none}.pca-field-error.show{display:block}
+.control.invalid{border-color:var(--red);box-shadow:0 0 0 3px rgba(185,77,85,.08)}
+
+.pca-import-note{border:1px solid #cfe0f1;background:#f5f9fe;border-radius:14px;padding:12px 14px;font-size:11px;color:#49637f;line-height:1.55;margin-bottom:14px}
+.pca-import-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}
+.pca-import-stat{border:1px solid var(--line);border-radius:13px;padding:12px}.pca-import-stat span{font-size:10px;color:var(--muted)}.pca-import-stat strong{display:block;font-size:18px;margin-top:3px}
+
+.pca-toast{position:fixed;right:22px;bottom:22px;z-index:150;max-width:420px;background:#10233f;color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 18px 50px rgba(8,24,43,.22);font-size:12px;line-height:1.45;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s ease}
+.pca-toast.show{opacity:1;transform:translateY(0)}
+.pca-toast.error{background:#7d2930}
+
+.pca-inline-note{font-size:11px;color:var(--muted);line-height:1.5}
+.pca-linkage-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);margin-top:9px}.pca-linkage-legend span{display:flex;align-items:center;gap:5px}
+.pca-linkage-legend i{width:7px;height:7px;border-radius:50%;display:inline-block}.pca-linkage-legend .yes{background:var(--green)}.pca-linkage-legend .no{background:var(--red)}.pca-linkage-legend .pending{background:#8aa0b8}
+
+@media(max-width:1180px){
+  .pca-filter-grid{grid-template-columns:repeat(3,1fr)}
+  .pca-quarter-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:920px){
+  .pca-metrics{grid-template-columns:repeat(2,1fr)}
+  .pca-grid{grid-template-columns:1fr}.pca-card-wide{grid-column:auto}
+  .pca-sector-layout{grid-template-columns:1fr}.pca-sector-editor{position:static}
+}
+@media(max-width:640px){
+  .pca-filter-grid,.pca-form-grid{grid-template-columns:1fr}
+  .pca-form-grid .span-2{grid-column:auto}
+  .pca-metrics{grid-template-columns:1fr}
+  .pca-quarter-grid{grid-template-columns:1fr}
+  .pca-toolbar{align-items:stretch}.pca-actions{width:100%}.pca-actions .btn{flex:1}
+  .pca-dialog{max-height:calc(100vh - 16px);border-radius:16px}.pca-modal{padding:8px}
+  .pca-import-summary{grid-template-columns:1fr}
+}
+@media print{
+  #viewPCA .pca-toolbar,#viewPCA .pca-filter-panel,#viewPCA .pca-actions,#viewPCA .pca-row-actions,#viewPCA .btn,#viewPCA .pca-tabs{display:none!important}
+  .pca-modal,.pca-toast{display:none!important}
+  #viewPCA .panel,#viewPCA .pca-metric,#viewPCA .pca-overview-wrap,#viewPCA .pca-items-wrap{box-shadow:none}
+  #viewPCA .pca-tab-panel.hidden{display:none!important}
+  #viewPCA .pca-items-table{min-width:0;font-size:9px}
+}

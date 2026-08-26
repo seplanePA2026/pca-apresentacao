@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Controle Orçamentário - Paulo Afonso</title>
+  <link rel="stylesheet" href="./assets/css/variables.css">
+  <link rel="stylesheet" href="./assets/css/base.css">
+  <link rel="stylesheet" href="./assets/css/components.css">
+  <link rel="stylesheet" href="./assets/css/dashboard.css">
+  <link rel="stylesheet" href="./assets/css/pca.css">
+  <link rel="stylesheet" href="./assets/css/report.css">
+  <link rel="stylesheet" href="./assets/css/print.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <img class="brand-logo" src="./Logos/PMPA_logo_01.png" alt="Prefeitura Municipal de Paulo Afonso">
+      <div>
+        <div class="brand-title">Controle Orçamentário - Paulo Afonso</div>
+        <div class="brand-sub" id="brandSub">Base orçamentária consolidada • Agosto/2026</div>
+      </div>
+    </div>
+
+    <nav class="top-nav" aria-label="Navegação principal">
+      <button class="nav-icon active" id="navConsulta" type="button" title="Consulta orçamentária" aria-label="Consulta orçamentária" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z" fill="currentColor"/>
+        </svg>
+        <span>Consulta</span>
+      </button>
+      <button class="nav-icon" id="navPCA" type="button" title="PCA — Plano de Contratações Anual" aria-label="PCA — Plano de Contratações Anual">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 19h16v2H4v-2zm2-3h2V9H6v7zm5 0h2V5h-2v11zm5 0h2v-5h-2v5z" fill="currentColor"/>
+        </svg>
+        <span>PCA</span>
+      </button>
+    </nav>
+
+    <div class="topbar-actions">
+      <button class="btn btn-primary" id="exportBtn" type="button">Exportar</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- ========== VIEW: CONSULTA ========== -->
+  <div id="viewConsulta">
+    <section class="panel filters" aria-label="Filtros">
+      <div class="filter-grid">
+        <div class="field">
+          <label for="orgSelect">Secretaria / Órgão</label>
+          <select id="orgSelect" class="control"></select>
+        </div>
+        <div class="field">
+          <label for="unitSelect">Local / Unidade</label>
+          <select id="unitSelect" class="control"></select>
+        </div>
+        <div class="field">
+          <label for="search">Pesquisar no detalhamento</label>
+          <input id="search" class="control" type="search" placeholder="Ação, elemento, fonte ou descrição…">
+        </div>
+        <div class="field">
+          <label for="availability">Saldo disponível</label>
+          <select id="availability" class="control">
+            <option value="all">Todos</option>
+            <option value="high">75% ou mais</option>
+            <option value="mid">25% a 74,99%</option>
+            <option value="low">Abaixo de 25%</option>
+            <option value="zero">Saldo zero</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="sort">Ordenação</label>
+          <select id="sort" class="control">
+            <option value="code">Por código</option>
+            <option value="updatedDesc">Maior dotação atualizada</option>
+            <option value="balanceDesc">Maior saldo disponível</option>
+            <option value="pctDesc">Maior % disponível</option>
+            <option value="pctAsc">Menor % disponível</option>
+          </select>
+        </div>
+      </div>
+      <div class="filter-actions" style="margin-top:10px">
+        <button class="btn" id="resetBtn" type="button">Limpar filtros</button>
+        <button class="btn" id="expandBtn" type="button">Expandir ações</button>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="Indicadores">
+      <article class="metric">
+        <div class="metric-label">Dotação Inicial</div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="mInitial">—</div>
+          <span id="mInitialDelta"></span>
+        </div>
+        <div class="metric-sub" id="mInitialSub">Participação no total inicial</div>
+      </article>
+      <article class="metric">
+        <div class="metric-label">Dotação Atualizada</div>
+        <div class="metric-value-row">
+          <div class="metric-value" id="mUpdated">—</div>
+          <span id="mUpdatedDelta"></span>
+        </div>
+        <div class="metric-sub" id="mVariation">Variação vs. inicial</div>
+      </article>
+      <article class="metric">
+        <div class="metric-label">Saldo Disponível</div>
+        <div class="metric-value" id="mBalance">—</div>
+        <div class="metric-sub" id="mBalancePct">—</div>
+        <div class="track"><div class="fill green" id="balanceBar" style="width:0"></div></div>
+      </article>
+      <article class="metric">
+        <div class="metric-label">Parcela não disponível</div>
+        <div class="metric-value" id="mCommitted">—</div>
+        <div class="metric-sub" id="mCommittedPct">—</div>
+        <div class="track"><div class="fill" id="committedBar" style="width:0"></div></div>
+      </article>
+    </section>
+
+    <section class="section" id="overviewSection">
+      <div class="section-head">
+        <div>
+          <h2>Visão geral por Secretaria / Órgão</h2>
+          <p>Clique em “Abrir” para carregar os locais e o detalhamento daquele órgão.</p>
+        </div>
+        <div class="section-meta" id="overviewMeta"></div>
+      </div>
+      <div class="overview-wrap">
+        <table class="overview-table">
+          <thead>
+            <tr>
+              <th>Secretaria / Órgão</th>
+              <th class="num">Dotação Inicial</th>
+              <th class="num">Dotação Atualizada</th>
+              <th class="num">Saldo Disponível</th>
+              <th class="num">% disponível</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="overviewBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section hidden" id="localsSection">
+      <div class="section-head">
+        <div>
+          <h2>Locais / Unidades</h2>
+          <p>Os locais abaixo correspondem às unidades orçamentárias existentes no arquivo do órgão selecionado.</p>
+        </div>
+        <div class="section-meta" id="localsMeta"></div>
+      </div>
+      <div class="local-strip" id="localCards"></div>
+    </section>
+
+    <section class="section hidden" id="detailSection">
+      <div class="section-head">
+        <div>
+          <h2>Detalhamento das ações</h2>
+          <p id="detailSubtitle">—</p>
+        </div>
+        <div class="section-meta" id="detailMeta"></div>
+      </div>
+      <div class="action-groups" id="actionGroups"></div>
+      <div class="empty hidden" id="emptyState">Nenhuma ação ou linha orçamentária corresponde aos filtros atuais.</div>
+    </section>
+
+    <div class="callout">
+      <strong>Critério dos percentuais:</strong> % disponível = Saldo Disponível ÷ Dotação Atualizada × 100. A parcela não disponível é a diferença entre Dotação Atualizada e Saldo Disponível. Quando a dotação atualizada é zero, o percentual é apresentado como “—” para evitar uma razão sem base.
+    </div>
+  </div>
+
+  <!-- ========== VIEW: PCA 2027 ========== -->
+  <div id="viewPCA" class="hidden pca-app">
+    <section class="panel pca-toolbar" aria-label="Navegação e ações do PCA">
+      <div class="pca-tabs">
+        <button class="pca-tab active" type="button" data-pca-tab="overview">Visão geral</button>
+        <button class="pca-tab" type="button" data-pca-tab="items">Demandas / DFDs</button>
+        <button class="pca-tab" type="button" data-pca-tab="sectors">Setores / Departamentos</button>
+      </div>
+      <div class="pca-actions">
+        <button class="btn btn-quiet" id="pcaResetFilters" type="button">Limpar filtros</button>
+        <button class="btn" id="pcaModelBtn" type="button">Baixar modelo CSV</button>
+        <button class="btn" id="pcaImportBtn" type="button">Importar CSV</button>
+        <input id="pcaImportInput" class="hidden" type="file" accept=".csv,text/csv">
+        <button class="btn btn-primary" id="pcaNewBtn" type="button">+ Nova demanda</button>
+      </div>
+    </section>
+
+    <section class="panel pca-filter-panel" aria-label="Filtros do PCA">
+      <div class="pca-filter-grid">
+        <div class="field"><label for="pcaSearch">Pesquisar</label><input class="control" id="pcaSearch" type="search" placeholder="DFD, item, setor, descrição…"></div>
+        <div class="field"><label for="pcaOrgFilter">Secretaria / Órgão</label><select class="control" id="pcaOrgFilter"></select></div>
+        <div class="field"><label for="pcaSectorFilter">Setor / Departamento</label><select class="control" id="pcaSectorFilter"><option value="all">Todos os setores</option></select></div>
+        <div class="field"><label for="pcaTypeFilter">Tipo de objeto</label><select class="control" id="pcaTypeFilter"><option value="all">Todos os tipos</option></select></div>
+        <div class="field"><label for="pcaPriorityFilter">Prioridade</label><select class="control" id="pcaPriorityFilter"><option value="all">Todas</option></select></div>
+        <div class="field"><label for="pcaQuarterFilter">Trimestre</label><select class="control" id="pcaQuarterFilter"><option value="all">Todos</option></select></div>
+      </div>
+      <div class="pca-filter-foot">
+        <div class="pca-filter-status" id="pcaFilterStatus">0 itens cadastrados</div>
+      </div>
+    </section>
+
+    <section class="pca-metrics" aria-label="Indicadores do PCA">
+      <article class="pca-metric"><div class="pca-metric-label">Itens planejados</div><div class="pca-metric-value" id="pcaMItems">0</div><div class="pca-metric-sub">Demandas/itens no filtro atual</div></article>
+      <article class="pca-metric"><div class="pca-metric-label">Valor total estimado</div><div class="pca-metric-value" id="pcaMValue">R$ 0,00</div><div class="pca-metric-sub">Quantidade × valor unitário</div></article>
+      <article class="pca-metric"><div class="pca-metric-label">Prioridade alta</div><div class="pca-metric-value" id="pcaMHigh">0</div><div class="pca-metric-sub" id="pcaMHighSub">Nenhuma demanda cadastrada</div></article>
+      <article class="pca-metric"><div class="pca-metric-label">Com vinculação orçamentária</div><div class="pca-metric-value" id="pcaMLinked">0,00%</div><div class="pca-metric-sub" id="pcaMLinkedSub">Nenhuma demanda cadastrada</div><div class="track"><div class="fill green" id="pcaLinkedBar" style="width:0"></div></div></article>
+    </section>
+
+    <div data-pca-panel="overview">
+      <div class="pca-grid">
+        <section class="panel pca-card">
+          <div class="pca-card-head"><div><h2>Planejamento por trimestre</h2><p>Distribuição dos valores estimados no cronograma anual.</p></div></div>
+          <div class="pca-quarter-grid" id="pcaQuarterGrid"></div>
+        </section>
+        <section class="panel pca-card">
+          <div class="pca-card-head"><div><h2>Prioridades</h2><p>Quantidade de itens classificados como Alta, Média ou Baixa.</p></div></div>
+          <div class="pca-priority-list" id="pcaPriorityList"></div>
+        </section>
+        <section class="panel pca-card pca-card-wide">
+          <div class="pca-card-head"><div><h2>Consolidação por Secretaria / Órgão</h2><p>Somente demandas cadastradas no PCA. Nenhum valor orçamentário é usado automaticamente nesta visão.</p></div><span class="section-meta" id="pcaOverviewMeta"></span></div>
+          <div class="pca-overview-wrap">
+            <table class="pca-overview-table"><thead><tr><th>Secretaria / Órgão</th><th class="num">Setores</th><th class="num">Itens</th><th class="num">Valor estimado</th><th class="num">Prioridade alta</th><th class="num">% vinculados</th><th></th></tr></thead><tbody id="pcaOrgOverviewBody"></tbody></table>
+          </div>
+          <div class="pca-empty hidden" id="pcaOverviewEmpty"><strong>O PCA 2027 ainda não possui demandas cadastradas</strong>Cadastre a primeira demanda para iniciar a consolidação por secretaria.<br><button class="btn btn-primary" type="button" data-pca-empty-new>+ Nova demanda</button></div>
+        </section>
+      </div>
+    </div>
+
+    <div data-pca-panel="items" class="hidden">
+      <section class="section">
+        <div class="section-head"><div><h2>Demandas / DFDs</h2><p>Estrutura baseada na Planilha PCA Municipal: identificação, requisitante, objeto, quantitativos, valores, prioridade, trimestre e vinculação.</p></div><div class="section-meta" id="pcaItemsMeta"></div></div>
+        <div class="pca-items-wrap" id="pcaItemsWrap"><table class="pca-items-table"><thead><tr><th>DFD / Item</th><th>Secretaria / Setor</th><th>Tipo</th><th>Descrição</th><th>Empresa</th><th>Renovação</th><th class="num">Qtd.</th><th>Unidade</th><th class="num">Valor unit.</th><th class="num">Valor total</th><th>Prioridade</th><th>Trimestre</th><th>Vinculação</th><th></th></tr></thead><tbody id="pcaItemsBody"></tbody></table></div>
+        <div class="pca-empty hidden" id="pcaItemsEmpty"><strong>Nenhuma demanda encontrada</strong>Cadastre o primeiro DFD/item ou ajuste os filtros atuais.<br><button class="btn btn-primary" type="button" data-pca-empty-new>+ Nova demanda</button></div>
+      </section>
+    </div>
+
+    <div data-pca-panel="sectors" class="hidden">
+      <section class="pca-sector-layout">
+        <aside class="panel pca-sector-editor">
+          <h2>Cadastro de setores</h2>
+          <p>Cadastre apenas setores/departamentos reais. O sistema não cria nomes automaticamente e não confunde unidade orçamentária com setor requisitante.</p>
+          <div class="field"><label for="pcaSectorOrg">Secretaria / Órgão</label><select class="control" id="pcaSectorOrg"></select></div>
+          <div class="field"><label for="pcaSectorName">Setor / Departamento</label><input class="control" id="pcaSectorName" type="text" maxlength="140" placeholder="Ex.: nome oficial do setor"></div>
+          <button class="btn btn-primary" id="pcaAddSector" type="button">Adicionar setor</button>
+        </aside>
+        <section class="panel pca-sector-list-panel">
+          <div class="pca-card-head"><div><h2>Setores cadastrados</h2><p>Os setores também são incluídos automaticamente quando uma demanda é salva.</p></div></div>
+          <div class="pca-sector-wrap" id="pcaSectorWrap"><table class="pca-sector-table"><thead><tr><th>Setor / Departamento</th><th class="num">Itens</th><th class="num">Valor estimado</th><th></th></tr></thead><tbody id="pcaSectorBody"></tbody></table></div>
+          <div class="pca-empty" id="pcaSectorEmpty"><strong>Selecione uma secretaria/órgão</strong>Depois cadastre os setores/departamentos reais que participarão do PCA.</div>
+        </section>
+      </section>
+    </div>
+
+    <div class="callout"><strong>Regra do módulo:</strong> o Valor Total Estimado é calculado automaticamente por Quantidade Estimada × Valor Unitário Estimado. “Vinculação Orçamentária” registra apenas Sim, Não ou A Indicar nesta etapa; a associação detalhada com ação, natureza e fonte orçamentária será uma camada posterior e não é presumida pelo sistema.</div>
+  </div>
+
+  <footer class="footer">
+    <span id="footerSource">Fonte: Demonstrativos de Despesa Orçamentária — Prefeitura Municipal de Paulo Afonso — Agosto/2026.</span>
+    <span id="footerNote">Interface de consulta da base orçamentária. A formalização das contratações permanece vinculada aos DFDs e ao fluxo do PCA.</span>
+  </footer>
+
+  <!-- Modal: demanda / item do PCA -->
+  <div class="pca-modal hidden" id="pcaModal" role="dialog" aria-modal="true" aria-labelledby="pcaModalTitle">
+    <div class="pca-dialog">
+      <div class="pca-dialog-head"><div><h2 id="pcaModalTitle">Nova demanda / item do PCA</h2><p>Preencha os campos definidos na Planilha PCA Municipal.</p></div><button class="btn" id="pcaModalClose" type="button">Fechar</button></div>
+      <form id="pcaForm" novalidate>
+        <div class="pca-dialog-body"><div class="pca-form-grid">
+          <div class="field"><label for="pcaDfd">Nº do DFD / Item *</label><input class="control" id="pcaDfd" type="text" maxlength="80" placeholder="Ex.: DFD nº 012/2026"><div class="pca-field-error"></div></div>
+          <div class="field"><label for="pcaFormOrg">Secretaria Requisitante *</label><select class="control" id="pcaFormOrg"></select><div class="pca-field-error"></div></div>
+          <div class="field span-2">
+            <label for="pcaFormSector">Setor / Departamento *</label>
+            <select class="control" id="pcaFormSector">
+              <option value="">Selecione a secretaria primeiro…</option>
+            </select>
+            <div class="pca-field-error"></div>
+            <div class="pca-help" id="pcaFormSectorHelp">Aparecem aqui os setores cadastrados em “Setores / Departamentos” para a secretaria selecionada.</div>
+          </div>
+          <div class="field"><label for="pcaObjectType">Tipo de Objeto *</label><input class="control" id="pcaObjectType" list="pcaObjectTypeSuggestions" type="text" maxlength="100" placeholder="Material, Serviço Comum, Engenharia…"><datalist id="pcaObjectTypeSuggestions"></datalist><div class="pca-field-error"></div></div>
+          <div class="field"><label for="pcaUnitMeasure">Unidade de Medida *</label><input class="control" id="pcaUnitMeasure" type="text" maxlength="100" placeholder="Ex.: Caixa com 5 resmas"><div class="pca-field-error"></div></div>
+          <div class="field span-2"><label for="pcaDescription">Descrição do Item *</label><textarea class="control" id="pcaDescription" maxlength="900" placeholder="Detalhamento claro e sucinto do que será comprado ou contratado"></textarea><div class="pca-field-error"></div></div>
+          <div class="field"><label for="pcaQuantity">Quantidade Estimada *</label><input class="control" id="pcaQuantity" type="number" min="0" step="0.001" inputmode="decimal" placeholder="0"><div class="pca-field-error"></div></div>
+          <div class="field"><label for="pcaUnitValue">Valor Unitário Estimado *</label><input class="control" id="pcaUnitValue" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0,00"><div class="pca-field-error"></div></div>
+          <div class="pca-total-box"><div class="label">Valor Total Estimado</div><div class="value" id="pcaCalculatedTotal">R$ 0,00</div><div class="pca-help">Calculado automaticamente: Quantidade × Valor Unitário.</div></div>
+          <div></div>
+          <div class="field"><label for="pcaPriority">Grau de Prioridade *</label><select class="control" id="pcaPriority"><option value="">Selecione…</option></select><div class="pca-field-error"></div></div>
+          <div class="field"><label for="pcaQuarter">Trimestre Estimado *</label><select class="control" id="pcaQuarter"><option value="">Selecione…</option></select><div class="pca-field-error"></div></div>
+          <div class="field"><label for="pcaCompany">Empresa</label><input class="control" id="pcaCompany" type="text" maxlength="180" placeholder="Ex.: razão social ou nome fantasia"><div class="pca-field-error"></div><div class="pca-help">Informe quando já houver fornecedor/prestador identificado ou previsto.</div></div>
+          <div class="field"><label for="pcaContractRenewal">Renovação de contrato *</label><select class="control" id="pcaContractRenewal"><option value="">Selecione…</option></select><div class="pca-field-error"></div><div class="pca-help">Indica se a demanda corresponde à renovação de contrato vigente.</div></div>
+          <div class="field span-2"><label for="pcaLinkage">Vinculação Orçamentária *</label><select class="control" id="pcaLinkage"><option value="">Selecione…</option></select><div class="pca-field-error"></div><div class="pca-help">Nesta etapa: Sim, Não ou A Indicar. A vinculação detalhada com QDD será implementada separadamente.</div></div>
+        </div></div>
+        <div class="pca-dialog-foot"><button class="btn" id="pcaModalCancel" type="button">Cancelar</button><button class="btn btn-primary" type="submit">Salvar demanda</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: validação de importação CSV -->
+  <div class="pca-modal hidden" id="pcaImportModal" role="dialog" aria-modal="true" aria-labelledby="pcaImportTitle">
+    <div class="pca-dialog" style="max-width:760px">
+      <div class="pca-dialog-head"><div><h2 id="pcaImportTitle">Validar importação do PCA</h2><p>Somente linhas válidas serão importadas. Nenhum valor é corrigido ou inventado silenciosamente.</p></div><button class="btn" id="pcaImportClose" type="button">Fechar</button></div>
+      <div class="pca-dialog-body">
+        <div class="pca-import-note">A importação exige os cabeçalhos do modelo oficial do sistema. A Secretaria Requisitante precisa corresponder a um órgão existente na base do projeto. O Valor Total Estimado é recalculado pelo sistema.</div>
+        <div class="pca-import-summary"><div class="pca-import-stat"><span>Linhas lidas</span><strong id="pcaImportTotal">0</strong></div><div class="pca-import-stat"><span>Válidas</span><strong id="pcaImportValid">0</strong></div><div class="pca-import-stat"><span>Com erro</span><strong id="pcaImportInvalid">0</strong></div></div>
+        <div class="callout" id="pcaImportErrors">—</div>
+      </div>
+      <div class="pca-dialog-foot"><button class="btn" id="pcaImportCancel" type="button">Cancelar</button><button class="btn btn-primary" id="pcaImportConfirm" type="button">Importar linhas válidas</button></div>
+    </div>
+  </div>
+
+  <div class="pca-toast" id="pcaToast" role="status" aria-live="polite"></div>
+
+  <!-- Documento gerado para exportação PDF -->
+  <div id="reportDocument" class="report-document" aria-hidden="true"></div>
+</main>
+
+<!-- Modal Exportar relatório -->
+<div class="export-modal hidden" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+  <div class="export-dialog">
+    <div class="export-dialog-head">
+      <div>
+        <h2 id="exportModalTitle">Exportar relatório PDF</h2>
+        <p>Escolha o escopo e as seções. Em seguida use <strong>Salvar como PDF</strong>. Desmarque “Cabeçalhos e rodapés” do navegador para evitar data/URL duplicadas.</p>
+      </div>
+      <button class="btn" id="exportCloseBtn" type="button" aria-label="Fechar">Fechar</button>
+    </div>
+
+    <div class="export-dialog-body">
+      <div class="export-block">
+        <h3>1. Escopo — Secretaria / Órgão</h3>
+        <div class="export-radios">
+          <label class="export-radio">
+            <input type="radio" name="exportScope" id="exportScopeAll" value="all" checked>
+            <span>Todos os órgãos (visão municipal consolidada)</span>
+          </label>
+          <label class="export-radio">
+            <input type="radio" name="exportScope" id="exportScopeSelected" value="selected">
+            <span>Selecionar secretarias / órgãos</span>
+          </label>
+        </div>
+        <div class="export-org-tools">
+          <button class="btn" id="exportSelectAllOrgs" type="button">Marcar todos</button>
+          <button class="btn" id="exportClearOrgs" type="button">Limpar</button>
+        </div>
+        <div class="export-org-list" id="exportOrganList"></div>
+      </div>
+
+      <div class="export-block">
+        <h3>2. Conteúdo do relatório</h3>
+        <p class="export-hint">Ao selecionar o escopo, defina o que entra no PDF. A capa segue o modelo institucional SEPLANE.</p>
+        <div class="export-checks" id="exportSectionList"></div>
+      </div>
+    </div>
+
+    <div class="export-dialog-foot">
+      <button class="btn" id="exportCancelBtn" type="button">Cancelar</button>
+      <button class="btn btn-primary" id="exportGenerateBtn" type="button">Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./assets/js/app.js"></script>
+</body>
+</html>
