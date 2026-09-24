@@ -54,11 +54,14 @@ function setView(view) {
   });
 
   if (view === 'pca') {
+    $('consultaFilterBar').classList.add('hidden');
+    $('search').classList.add('hidden');
     exportBtn.textContent = 'Exportar Cadastro';
     brandSub.textContent = 'Cadastro de demandas • PCA 2027';
     footerSource.textContent = 'PCA Municipal 2027 — base local de demandas e DFDs.';
     footerNote.textContent = 'Módulo de cadastro independente da consulta.';
   } else {
+    $('search').classList.remove('hidden');
     exportBtn.textContent = 'Exportar';
     brandSub.textContent = 'PCAs enviados pelas secretarias • 2027';
     footerSource.textContent = 'Fonte: PCAs enviados pelas secretarias / órgãos (pasta PCAs_Enviados).';
@@ -90,11 +93,9 @@ async function main() {
 
   const ui = {
     orgSelect: $('orgSelect'),
-    unitSelect: $('unitSelect'),
+    unitSelect: $('itemSetor'),
     search: $('search'),
-    sort: $('sort'),
     overviewSection: $('overviewSection'),
-    localsSection: $('localsSection'),
     detailSection: $('detailSection')
   };
 
@@ -105,32 +106,31 @@ async function main() {
     ui.unitSelect.value = 'all';
     renderer.populateUnitSelect();
     ui.search.value = '';
+    renderer.resetDetailFilters();
     renderer.render();
   });
-  ui.unitSelect.addEventListener('change', () => renderer.render());
-  ui.search.addEventListener('input', () => renderer.renderDetail());
-  ui.sort.addEventListener('change', () => {
-    const prev = ui.orgSelect.value;
-    renderer.populateOrgSelect();
-    if ([...ui.orgSelect.options].some((o) => o.value === prev)) ui.orgSelect.value = prev;
-    renderer.render();
-  });
-
-  $('resetBtn').addEventListener('click', () => {
-    ui.orgSelect.value = 'all';
-    renderer.populateUnitSelect();
+  $('itemSetor').addEventListener('change', () => renderer.render());
+  $('itemTipo').addEventListener('change', () => renderer.renderDetail());
+  $('itemEmpresa').addEventListener('change', () => renderer.renderDetail());
+  $('itemPrioridade').addEventListener('change', () => renderer.renderDetail());
+  $('itemValor').addEventListener('change', () => renderer.renderDetail());
+  $('itemClear').addEventListener('click', () => {
+    ui.unitSelect.value = 'all';
     ui.search.value = '';
-    ui.sort.value = 'totalDesc';
-    renderer.populateOrgSelect();
+    renderer.resetDetailFilters();
     renderer.render();
   });
+  ui.search.addEventListener('input', () => renderer.renderDetail());
 
   $('exportBtn').addEventListener('click', () => {
     if (currentView === 'pca') pca.exportCSV();
     else renderer.exportCSV();
   });
 
-  $('navConsulta').addEventListener('click', () => setView('consulta'));
+  $('navConsulta').addEventListener('click', () => {
+    setView('consulta');
+    renderer.render();
+  });
   $('navPCA').addEventListener('click', () => {
     setView('pca');
     pca.render();

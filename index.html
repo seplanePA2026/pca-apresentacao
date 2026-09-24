@@ -36,10 +36,56 @@
         </svg>
         <span>Cadastro</span>
       </button>
+      <input id="search" class="control topbar-search" type="search" placeholder="Pesquisar DFD, descrição, empresa…" aria-label="Pesquisar demandas">
     </nav>
 
     <div class="topbar-actions">
       <button class="btn btn-primary" id="exportBtn" type="button">Exportar</button>
+    </div>
+  </div>
+  <div id="consultaFilterBar" class="consulta-filterbar hidden" aria-label="Filtros das demandas">
+    <div class="consulta-filterbar-inner">
+      <div class="field">
+        <label for="orgSelect">Secretaria / Órgão</label>
+        <select id="orgSelect" class="control"></select>
+      </div>
+      <div class="field">
+        <label for="itemSetor">Setor</label>
+        <select id="itemSetor" class="control">
+          <option value="all">Todos os setores</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="itemTipo">Tipo</label>
+        <select id="itemTipo" class="control">
+          <option value="all">Todos os tipos</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="itemEmpresa">Empresa</label>
+        <select id="itemEmpresa" class="control">
+          <option value="all">Todas</option>
+          <option value="named">Com empresa</option>
+          <option value="na">Não se aplica</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="itemPrioridade">Prioridade</label>
+        <select id="itemPrioridade" class="control">
+          <option value="all">Todas</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="itemValor">Valor</label>
+        <select id="itemValor" class="control">
+          <option value="desc">Maior para menor</option>
+          <option value="asc">Menor para maior</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="itemClear">&nbsp;</label>
+        <button class="btn" id="itemClear" type="button">Limpar filtros</button>
+      </div>
     </div>
   </div>
 </header>
@@ -47,35 +93,6 @@
 <main class="container">
   <!-- ========== VIEW: CONSULTA ========== -->
   <div id="viewConsulta">
-    <section class="panel filters" aria-label="Filtros">
-      <div class="filter-grid filter-grid-pca">
-        <div class="field">
-          <label for="orgSelect">Secretaria / Órgão</label>
-          <select id="orgSelect" class="control"></select>
-        </div>
-        <div class="field">
-          <label for="unitSelect">Setor / Departamento</label>
-          <select id="unitSelect" class="control"></select>
-        </div>
-        <div class="field">
-          <label for="search">Pesquisar</label>
-          <input id="search" class="control" type="search" placeholder="DFD, descrição, empresa, tipo…">
-        </div>
-        <div class="field">
-          <label for="sort">Ordenação</label>
-          <select id="sort" class="control">
-            <option value="totalDesc">Maior valor total</option>
-            <option value="totalAsc">Menor valor total</option>
-            <option value="name">Por secretaria</option>
-            <option value="itemsDesc">Mais itens</option>
-          </select>
-        </div>
-      </div>
-      <div class="filter-actions" style="margin-top:10px">
-        <button class="btn" id="resetBtn" type="button">Limpar filtros</button>
-      </div>
-    </section>
-
     <section class="metrics metrics-single" aria-label="Indicadores">
       <article class="metric">
         <div class="metric-label">Total dos PCAs</div>
@@ -90,7 +107,7 @@
       <div class="section-head">
         <div>
           <h2>Visão geral por Secretaria / Órgão</h2>
-          <p>Total estimado de cada PCA enviado. Clique em “Abrir” para ver os setores e as demandas.</p>
+          <p>Total estimado de cada PCA enviado. Clique em “Abrir” para ver as demandas.</p>
         </div>
         <div class="section-meta" id="overviewMeta"></div>
       </div>
@@ -107,17 +124,6 @@
           <tbody id="overviewBody"></tbody>
         </table>
       </div>
-    </section>
-
-    <section class="section hidden" id="localsSection">
-      <div class="section-head">
-        <div>
-          <h2>Setores / Departamentos</h2>
-          <p>Totais por setor da secretaria selecionada.</p>
-        </div>
-        <div class="section-meta" id="localsMeta"></div>
-      </div>
-      <div class="local-strip" id="localCards"></div>
     </section>
 
     <section class="section hidden" id="detailSection">

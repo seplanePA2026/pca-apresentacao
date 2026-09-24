@@ -7,7 +7,7 @@ import { $, esc, money, normalize, intFmt } from './utils.js';
  * @param {object} ui
  */
 export function createRenderer(db, ui) {
-  const { orgSelect, unitSelect, search, sort, overviewSection, localsSection, detailSection } = ui;
+  const { orgSelect, unitSelect, search, overviewSection, detailSection } = ui;
   const organs = db.organs || [];
 
   function activeOrg() {
@@ -15,15 +15,7 @@ export function createRenderer(db, ui) {
   }
 
   function sortedOrgans() {
-    const list = [...organs];
-    const mode = sort.value;
-    list.sort((a, b) => {
-      if (mode === 'totalAsc') return a.total - b.total;
-      if (mode === 'name') return a.name.localeCompare(b.name, 'pt-BR');
-      if (mode === 'itemsDesc') return b.itemCount - a.itemCount || b.total - a.total;
-      return b.total - a.total;
-    });
-    return list;
+    return [...organs].sort((a, b) => b.total - a.total || a.name.localeCompare(b.name, 'pt-BR'));
   }
 
   function scopeTotal() {
@@ -41,9 +33,107 @@ export function createRenderer(db, ui) {
     return (o.items || []).filter((i) => (i.sector || '—') === unitSelect.value);
   }
 
+  function canonicalType(raw) {
+    const n = normalize(raw).replace(/\s+/g, ' ').trim();
+    if (!n || n === '-' || n === '—') return '';
+    if (n.includes('mat') && (n.includes('serv') || n.includes('serv.'))) return 'Serviço Material';
+    if (n.includes('comum')) return 'Serviço Comum';
+    if (n === 'servico' || n === 'servicos') return 'Serviço';
+    if (n.includes('engenharia')) return 'Engenharia';
+    if (n.includes('material')) return 'Material';
+    return String(raw).trim();
+  }
+
+  function canonicalPriority(raw) {
+    const n = normalize(raw).trim();
+    if (!n || n === '-' || n === '—') return '';
+    if (n.startsWith('alta')) return 'Alta';
+    if (n.startsWith('media')) return 'Média';
+    if (n.startsWith('baixa')) return 'Baixa';
+    return String(raw).trim();
+  }
+
+  function companyKind(raw) {
+    const n = normalize(raw).replace(/\s+/g, ' ').trim();
+    if (!n || n === '-' || n === '—') return 'empty';
+    if (n === 'nsa' || n === 'nao se aplica' || n.includes('nao se aplica')) return 'na';
+    return 'named';
+  }
+
+  function fillSelect(select, options, placeholder) {
+    const prev = select.value || 'all';
+    select.innerHTML =
+      `<option value="all">${esc(placeholder)}</option>` +
+      options.map((label) => `<option value="${esc(label)}">${esc(label)}</option>`).join('');
+    select.value = [...select.options].some((o) => o.value === prev) ? prev : 'all';
+  }
+
+  function sectorNames(org) {
+    const names = new Set();
+    for (const s of org.sectors || []) if (s.name) names.add(s.name);
+    for (const i of org.items || []) if (i.sector && i.sector !== '—') names.add(i.sector);
+    return [...names].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+
+  function syncConsultaBar() {
+    const bar = $('consultaFilterBar');
+    const onConsulta = !$('viewConsulta').classList.contains('hidden');
+    bar.classList.toggle('hidden', !onConsulta);
+    if (!onConsulta) return;
+
+    const org = activeOrg();
+    const tipo = $('itemTipo');
+    const prioridade = $('itemPrioridade');
+    const empresa = $('itemEmpresa');
+    const valor = $('itemValor');
+    if (!org) {
+      fillSelect(tipo, [], 'Todos os tipos');
+      fillSelect(prioridade, [], 'Todas');
+      tipo.disabled = true;
+      prioridade.disabled = true;
+      empresa.disabled = true;
+      valor.disabled = true;
+      return;
+    }
+    tipo.disabled = false;
+    prioridade.disabled = false;
+    empresa.disabled = false;
+    valor.disabled = false;
+
+    const types = [...new Set((org.items || []).map((i) => canonicalType(i.objectType)).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, 'pt-BR')
+    );
+    const priorityOrder = ['Alta', 'Média', 'Baixa'];
+    const priorities = [...new Set((org.items || []).map((i) => canonicalPriority(i.priority)).filter(Boolean))].sort(
+      (a, b) => {
+        const ia = priorityOrder.indexOf(a);
+        const ib = priorityOrder.indexOf(b);
+        if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+        return a.localeCompare(b, 'pt-BR');
+      }
+    );
+    fillSelect(tipo, types, 'Todos os tipos');
+    fillSelect(prioridade, priorities, 'Todas');
+  }
+
+  function resetDetailFilters() {
+    $('itemTipo').value = 'all';
+    $('itemEmpresa').value = 'all';
+    $('itemPrioridade').value = 'all';
+    $('itemValor').value = 'desc';
+    $('itemSetor').value = 'all';
+  }
+
   function filteredItems() {
     const q = normalize(search.value);
     let items = scopeItems();
+    const tipo = $('itemTipo').value;
+    const empresa = $('itemEmpresa').value;
+    const prioridade = $('itemPrioridade').value;
+    if (tipo !== 'all') items = items.filter((i) => canonicalType(i.objectType) === tipo);
+    if (empresa === 'named') items = items.filter((i) => companyKind(i.company) === 'named');
+    if (empresa === 'na') items = items.filter((i) => companyKind(i.company) === 'na');
+    if (prioridade !== 'all') items = items.filter((i) => canonicalPriority(i.priority) === prioridade);
     if (q) {
       items = items.filter((i) =>
         normalize(
@@ -51,6 +141,12 @@ export function createRenderer(db, ui) {
         ).includes(q)
       );
     }
+    const valor = $('itemValor').value === 'asc' ? 'asc' : 'desc';
+    items.sort((a, b) => {
+      const delta = (Number(a.total) || 0) - (Number(b.total) || 0);
+      if (delta !== 0) return valor === 'asc' ? delta : -delta;
+      return String(a.dfdNo || '').localeCompare(String(b.dfdNo || ''), 'pt-BR', { numeric: true });
+    });
     return items;
   }
 
@@ -71,10 +167,10 @@ export function createRenderer(db, ui) {
     }
     unitSelect.disabled = false;
     const prev = unitSelect.value;
-    const sectors = [...(o.sectors || [])].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+    const sectors = sectorNames(o);
     unitSelect.innerHTML =
       '<option value="all">Todos os setores</option>' +
-      sectors.map((s) => `<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
+      sectors.map((name) => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
     if ([...unitSelect.options].some((x) => x.value === prev)) unitSelect.value = prev;
   }
 
@@ -113,39 +209,6 @@ export function createRenderer(db, ui) {
         populateUnitSelect();
         render();
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      })
-    );
-  }
-
-  function renderLocals() {
-    const o = activeOrg();
-    if (!o) {
-      localsSection.classList.add('hidden');
-      return;
-    }
-    localsSection.classList.remove('hidden');
-    const cards = $('localCards');
-    const allActive = unitSelect.value === 'all';
-    const blocks = [
-      `<button class="local-card ${allActive ? 'active' : ''}" data-unit="all" type="button">
-    <div class="code">TODOS</div><div class="name">Todos os setores</div>
-    <div class="summary"><span>${money(o.total)}</span><span>${intFmt.format(o.itemCount)} itens</span></div>
-  </button>`
-    ];
-    for (const s of o.sectors || []) {
-      blocks.push(`<button class="local-card ${unitSelect.value === s.name ? 'active' : ''}" data-unit="${esc(
-        s.name
-      )}" type="button">
-      <div class="code">${esc(s.name.slice(0, 18))}</div><div class="name">${esc(s.name)}</div>
-      <div class="summary"><span>${money(s.total)}</span><span>${intFmt.format(s.itemCount)} itens</span></div>
-    </button>`);
-    }
-    cards.innerHTML = blocks.join('');
-    $('localsMeta').textContent = `${(o.sectors || []).length} ${(o.sectors || []).length === 1 ? 'setor' : 'setores'}`;
-    cards.querySelectorAll('.local-card').forEach((c) =>
-      c.addEventListener('click', () => {
-        unitSelect.value = c.dataset.unit;
-        render();
       })
     );
   }
@@ -195,9 +258,10 @@ export function createRenderer(db, ui) {
 
   function render() {
     renderVisibility();
+    populateUnitSelect();
+    syncConsultaBar();
     renderScope();
     if (!activeOrg()) renderOverview();
-    renderLocals();
     renderDetail();
   }
 
@@ -250,5 +314,5 @@ export function createRenderer(db, ui) {
     URL.revokeObjectURL(a.href);
   }
 
-  return { populateOrgSelect, populateUnitSelect, render, renderOverview, renderDetail, exportCSV };
+  return { populateOrgSelect, populateUnitSelect, render, renderOverview, renderDetail, exportCSV, resetDetailFilters };
 }
