@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="./assets/css/base.css">
   <link rel="stylesheet" href="./assets/css/components.css">
   <link rel="stylesheet" href="./assets/css/dashboard.css">
-  <link rel="stylesheet" href="./assets/css/orcamento.css">
   <link rel="stylesheet" href="./assets/css/pca.css">
   <link rel="stylesheet" href="./assets/css/report.css">
   <link rel="stylesheet" href="./assets/css/print.css">
@@ -30,12 +29,6 @@
           <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z" fill="currentColor"/>
         </svg>
         <span>Consulta</span>
-      </button>
-      <button class="nav-icon" id="navOrcamento" type="button" title="Orçamento — dashboard 2026 × 2027" aria-label="Orçamento — dashboard 2026 × 2027">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M3 3h18v2H3V3zm2 4h14v14H5V7zm3 3v8h2v-8H8zm6 2v6h2v-6h-2z" fill="currentColor"/>
-        </svg>
-        <span>Orçamento</span>
       </button>
       <button class="nav-icon" id="navPCA" type="button" title="Cadastro de demandas do PCA" aria-label="Cadastro de demandas do PCA">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -155,114 +148,6 @@
       </div>
       <div class="empty hidden" id="emptyState">Nenhuma demanda corresponde aos filtros atuais.</div>
     </section>
-  </div>
-
-  <!-- ========== VIEW: ORÇAMENTO ========== -->
-  <div id="viewOrcamento" class="hidden orc-app">
-    <section class="orc-metrics" aria-label="Indicadores orçamentários">
-      <article class="metric"><div class="metric-label">Orçamento 2026</div><div class="metric-value" id="orcM2026">—</div><div class="metric-sub">Dotação inicial consolidada</div></article>
-      <article class="metric"><div class="metric-label">Previsão até Dez/2026</div><div class="metric-value" id="orcMDec">—</div><div class="metric-sub">Projeção de execução no exercício</div></article>
-      <article class="metric"><div class="metric-label">Previsão 2027</div><div class="metric-value" id="orcM2027">—</div><div class="metric-sub">Orçamento planejado para o próximo ano</div></article>
-      <article class="metric"><div class="metric-label">Diferença 2027 − 2026</div><div class="metric-value" id="orcMDelta">—</div><div class="metric-sub" id="orcMDeltaSub">—</div></article>
-      <article class="metric"><div class="metric-label">Dota&#231;&#227;o atualizada</div><div class="metric-value" id="orcMUpdated">?</div><div class="metric-sub">Total atualizado das secretarias</div></article>
-      <article class="metric"><div class="metric-label">Despesas pagas</div><div class="metric-value" id="orcMPaid">?</div><div class="metric-sub">Total pago no exerc&#237;cio</div></article>
-    </section>
-
-    <section class="panel filters" aria-label="Filtros do orçamento">
-      <div class="filter-grid filter-grid-pca">
-        <div class="field">
-          <label for="orcSearch">Pesquisar secretaria</label>
-          <input id="orcSearch" class="control" type="search" placeholder="Nome da secretaria / órgão…">
-        </div>
-        <div class="field">
-          <label for="orcTrend">Variação 2026 → 2027</label>
-          <select id="orcTrend" class="control">
-            <option value="all">Todas</option>
-            <option value="up">Aumento</option>
-            <option value="down">Redução</option>
-            <option value="flat">Estável (±0,5%)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="orcSort">Ordenação</label>
-          <select id="orcSort" class="control">
-            <option value="deltaDesc">Maior aumento (R$)</option>
-            <option value="deltaAsc">Maior redução (R$)</option>
-            <option value="pctDesc">Maior alta (%)</option>
-            <option value="pctAsc">Maior queda (%)</option>
-            <option value="forecastDesc">Maior previsão 2027</option>
-            <option value="name">Por nome</option>
-          </select>
-        </div>
-        <div class="field" style="display:flex;align-items:flex-end">
-          <button class="btn" id="orcReset" type="button">Limpar filtros</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-head">
-        <div>
-          <h2>Listagem completa — Orçamento das despesas</h2>
-          <p>Clique no l&#225;pis de qualquer c&#233;lula para editar. C&#233;lulas calculadas permitem editar os valores da f&#243;rmula. Os cards mostram os totais gerais, independentemente dos filtros.</p>
-        </div>
-        <div class="section-meta" id="orcListMeta"></div>
-      </div>
-      <div class="overview-wrap">
-        <table class="overview-table orc-table">
-          <thead>
-            <tr>
-              <th>Secretaria / Órgão</th>
-              <th class="num">Orçamento 2026</th>
-              <th class="num">% 2026</th>
-              <th class="num">Dota&#231;&#227;o atualizada</th><th class="num">% atualizado</th><th class="num">Despesas pagas</th><th class="num">Prev. Dez/2026</th>
-              <th class="num">Previsão 2027</th>
-              <th class="num">% 2027</th>
-              <th class="num">Δ R$ 2027−2026</th>
-              <th class="num">Δ %</th>
-              <th class="num">Δ p.p. participação</th>
-            </tr>
-          </thead>
-          <tbody id="orcTableBody"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="orc-metrics orc-metrics-rev" aria-label="Receitas e saldo">
-      <article class="metric"><div class="metric-label">Receita prevista 2026</div><div class="metric-value" id="orcR2026">—</div><div class="metric-sub">LOA / previsão orçamentária</div></article>
-      <article class="metric"><div class="metric-label">Arrecadada até 09/09</div><div class="metric-value" id="orcRCollected">—</div><div class="metric-sub" id="orcRCollectedSub">—</div></article>
-      <article class="metric"><div class="metric-label">Receita prevista Dez/2026</div><div class="metric-value" id="orcRDec">—</div><div class="metric-sub">Projeção de arrecadação</div></article>
-      <article class="metric"><div class="metric-label">Receita prevista 2027</div><div class="metric-value" id="orcR2027">—</div><div class="metric-sub">Base da previsão de despesas</div></article>
-      <article class="metric"><div class="metric-label">Saldo até 09/09</div><div class="metric-value" id="orcRBalance">—</div><div class="metric-sub">Receita − despesas pagas</div></article>
-      <article class="metric"><div class="metric-label">Saldo previsto Dez/2026</div><div class="metric-value" id="orcRBalanceDec">—</div><div class="metric-sub">Receita projetada − despesas projetadas</div></article>
-    </section>
-
-    <div class="orc-grid">
-      <section class="panel orc-card">
-        <div class="section-head"><div><h2>Composição 2026</h2><p>Participação de cada secretaria no orçamento inicial.</p></div></div>
-        <div id="orcChart2026"></div>
-      </section>
-      <section class="panel orc-card">
-        <div class="section-head"><div><h2>Composição 2027</h2><p>Participação prevista no orçamento de 2027.</p></div></div>
-        <div id="orcChart2027"></div>
-      </section>
-      <section class="panel orc-card orc-card-wide">
-        <div class="section-head"><div><h2>Variação percentual 2026 → 2027</h2><p>Diferença relativa entre a dotação inicial de 2026 e a previsão para 2027.</p></div><div class="section-meta" id="orcVarMeta"></div></div>
-        <div id="orcChartVar"></div>
-      </section>
-      <section class="panel orc-card">
-        <div class="section-head"><div><h2>Maiores aumentos (R$)</h2><p>Secretarias com maior ganho absoluto na previsão 2027.</p></div></div>
-        <div id="orcTopUp"></div>
-      </section>
-      <section class="panel orc-card">
-        <div class="section-head"><div><h2>Maiores reduções (R$)</h2><p>Secretarias com maior corte absoluto na previsão 2027.</p></div></div>
-        <div id="orcTopDown"></div>
-      </section>
-    </div>
-
-    <div class="callout">
-      <strong>Inferência:</strong> a diferença em R$ e em % compara a <em>Previsão 2027</em> com o <em>Orçamento 2026</em> (dotação inicial). A variação em pontos percentuais (p.p.) mede se a secretaria ganhou ou perdeu peso no total. Fonte: planilha Apresentação — referência até 09/09/2026.
-    </div>
   </div>
 
   <!-- ========== VIEW: CADASTRO (PCA) ========== -->

@@ -1,16 +1,14 @@
 /**
  * Controle Orçamentário - Paulo Afonso
- * Navegação: Consulta | Orçamento | Cadastro
+ * Navegação: Consulta | Cadastro
  */
 
 import { $ } from './utils.js';
 import { createRenderer } from './render.js';
 import { createPCA } from './pca.js';
-import { createOrcamento } from './orcamento.js';
 
 const PCAS_URL = './data/pcas_enviados.json';
 const ORGANS_URL = './data/organs.json';
-const ORCAMENTO_URL = './data/orcamento.json';
 let currentView = 'consulta';
 
 async function loadJSON(url) {
@@ -35,12 +33,10 @@ function setView(view) {
   currentView = view;
   const views = {
     consulta: $('viewConsulta'),
-    orcamento: $('viewOrcamento'),
     pca: $('viewPCA')
   };
   const navs = {
     consulta: $('navConsulta'),
-    orcamento: $('navOrcamento'),
     pca: $('navPCA')
   };
   const exportBtn = $('exportBtn');
@@ -61,12 +57,7 @@ function setView(view) {
     exportBtn.textContent = 'Exportar Cadastro';
     brandSub.textContent = 'Cadastro de demandas • PCA 2027';
     footerSource.textContent = 'PCA Municipal 2027 — base local de demandas e DFDs.';
-    footerNote.textContent = 'Módulo de cadastro independente da consulta e do dashboard orçamentário.';
-  } else if (view === 'orcamento') {
-    exportBtn.textContent = 'Exportar Orçamento';
-    brandSub.textContent = 'Dashboard orçamentário • 2026 × previsão 2027';
-    footerSource.textContent = 'Fonte: planilha Apresentação — despesas até 09/09/2026 e previsão 2027.';
-    footerNote.textContent = 'Diferenças em R$ e % comparam a previsão 2027 com o orçamento inicial de 2026.';
+    footerNote.textContent = 'Módulo de cadastro independente da consulta.';
   } else {
     exportBtn.textContent = 'Exportar';
     brandSub.textContent = 'PCAs enviados pelas secretarias • 2027';
@@ -78,12 +69,10 @@ function setView(view) {
 async function main() {
   let db;
   let organCatalog;
-  let orcamentoDb;
   try {
-    [db, organCatalog, orcamentoDb] = await Promise.all([
+    [db, organCatalog] = await Promise.all([
       loadJSON(PCAS_URL),
-      loadJSON(ORGANS_URL),
-      loadJSON(ORCAMENTO_URL)
+      loadJSON(ORGANS_URL)
     ]);
   } catch (err) {
     showFatal(err.message || String(err));
@@ -92,10 +81,6 @@ async function main() {
 
   if (!db?.organs?.length) {
     showFatal('Nenhum PCA enviado encontrado em data/pcas_enviados.json.');
-    return;
-  }
-  if (!orcamentoDb?.organs?.length) {
-    showFatal('Base orçamentária vazia em data/orcamento.json.');
     return;
   }
 
@@ -115,7 +100,6 @@ async function main() {
 
   const renderer = createRenderer(db, ui);
   const pca = createPCA(catalog);
-  const orcamento = createOrcamento(orcamentoDb);
 
   ui.orgSelect.addEventListener('change', () => {
     ui.unitSelect.value = 'all';
@@ -143,15 +127,10 @@ async function main() {
 
   $('exportBtn').addEventListener('click', () => {
     if (currentView === 'pca') pca.exportCSV();
-    else if (currentView === 'orcamento') orcamento.exportCSV();
     else renderer.exportCSV();
   });
 
   $('navConsulta').addEventListener('click', () => setView('consulta'));
-  $('navOrcamento').addEventListener('click', () => {
-    setView('orcamento');
-    orcamento.render();
-  });
   $('navPCA').addEventListener('click', () => {
     setView('pca');
     pca.render();
@@ -160,7 +139,6 @@ async function main() {
   renderer.populateOrgSelect();
   renderer.populateUnitSelect();
   pca.bind();
-  orcamento.bind();
   renderer.renderOverview();
   renderer.render();
   setView('consulta');
