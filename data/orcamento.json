@@ -1,0 +1,424 @@
+{
+  "source": "Apresentação (1).xlsx",
+  "sheet": "Luquinha",
+  "referenceDate": "2026-09-09",
+  "generatedAt": "2026-09-16T08:42:54",
+  "totals": {
+    "initial2026": 676297000.0,
+    "updated": 681858966.77,
+    "paid": 396139658.39,
+    "forecastDec2026": 573773711.56,
+    "forecast2027": 680000000.0,
+    "deltaValue": 3703000.0,
+    "deltaPct": 0.5475,
+    "executionPct": 58.097
+  },
+  "revenue": {
+    "planned2026": 676297000.0,
+    "collectedSep9": 410789218.02,
+    "forecastDec2026": 594992319.75,
+    "forecast2027": 680000000.0,
+    "balanceSep9": 14649559.63,
+    "balanceForecastDec2026": 21218608.19
+  },
+  "organs": [
+    {
+      "name": "Câmara de Vereadores",
+      "initial2026": 20810000.0,
+      "share2026": 3.07705,
+      "share2027": 3.161765,
+      "updated": 20810000.0,
+      "shareUpdated": 3.051951,
+      "paid": 12504192.1,
+      "forecastDec2026": 18111230.62,
+      "forecast2027": 21500000.0,
+      "deltaValue": 690000.0,
+      "deltaPct": 3.3157,
+      "shareDeltaPp": 0.084715
+    },
+    {
+      "name": "Manut. Gab.",
+      "initial2026": 4073000.0,
+      "share2026": 0.60225,
+      "share2027": 0.690054,
+      "updated": 4705194.0,
+      "shareUpdated": 0.690054,
+      "paid": 3010273.81,
+      "forecastDec2026": 4360118.81,
+      "forecast2027": 4692366.13,
+      "deltaValue": 619366.13,
+      "deltaPct": 15.2066,
+      "shareDeltaPp": 0.087804
+    },
+    {
+      "name": "Centro Integrado Btn",
+      "initial2026": 595000.0,
+      "share2026": 0.087979,
+      "share2027": 0.002787,
+      "updated": 19000.0,
+      "shareUpdated": 0.002786,
+      "paid": 0.0,
+      "forecastDec2026": 0.0,
+      "forecast2027": 18948.2,
+      "deltaValue": -576051.8,
+      "deltaPct": -96.8154,
+      "shareDeltaPp": -0.085192
+    },
+    {
+      "name": "Ouvidoria",
+      "initial2026": 141000.0,
+      "share2026": 0.020849,
+      "share2027": 0.022439,
+      "updated": 153000.0,
+      "shareUpdated": 0.022439,
+      "paid": 66266.67,
+      "forecastDec2026": 95981.49,
+      "forecast2027": 152582.87,
+      "deltaValue": 11582.87,
+      "deltaPct": 8.2148,
+      "shareDeltaPp": 0.00159
+    },
+    {
+      "name": "Assessoria de Comunicação",
+      "initial2026": 5409000.0,
+      "share2026": 0.799797,
+      "share2027": 0.662014,
+      "updated": 4514000.0,
+      "shareUpdated": 0.662014,
+      "paid": 1953417.53,
+      "forecastDec2026": 2829354.76,
+      "forecast2027": 4501693.38,
+      "deltaValue": -907306.62,
+      "deltaPct": -16.774,
+      "shareDeltaPp": -0.137783
+    },
+    {
+      "name": "Gabinete do Vice",
+      "initial2026": 427000.0,
+      "share2026": 0.063138,
+      "share2027": 0.068885,
+      "updated": 469700.0,
+      "shareUpdated": 0.068885,
+      "paid": 254825.55,
+      "forecastDec2026": 369092.56,
+      "forecast2027": 468419.45,
+      "deltaValue": 41419.45,
+      "deltaPct": 9.7001,
+      "shareDeltaPp": 0.005747
+    },
+    {
+      "name": "Procuradoria",
+      "initial2026": 1963000.0,
+      "share2026": 0.290257,
+      "share2027": 0.329203,
+      "updated": 2244703.0,
+      "shareUpdated": 0.329203,
+      "paid": 1930907.64,
+      "forecastDec2026": 2796751.15,
+      "forecast2027": 2238583.22,
+      "deltaValue": 275583.22,
+      "deltaPct": 14.0389,
+      "shareDeltaPp": 0.038946
+    },
+    {
+      "name": "Controladoria",
+      "initial2026": 989000.0,
+      "share2026": 0.146238,
+      "share2027": 0.157339,
+      "updated": 1072831.0,
+      "shareUpdated": 0.157339,
+      "paid": 546359.03,
+      "forecastDec2026": 791353.36,
+      "forecast2027": 1069906.12,
+      "deltaValue": 80906.12,
+      "deltaPct": 8.1806,
+      "shareDeltaPp": 0.011101
+    },
+    {
+      "name": "Planejamento Estratégico",
+      "initial2026": 648000.0,
+      "share2026": 0.095816,
+      "share2027": 0.095328,
+      "updated": 650000.0,
+      "shareUpdated": 0.095328,
+      "paid": 279831.45,
+      "forecastDec2026": 405311.43,
+      "forecast2027": 648227.89,
+      "deltaValue": 227.89,
+      "deltaPct": 0.0352,
+      "shareDeltaPp": -0.000488
+    },
+    {
+      "name": "Administração",
+      "initial2026": 18504000.0,
+      "share2026": 2.736076,
+      "share2027": 2.824697,
+      "updated": 19279364.99,
+      "shareUpdated": 2.827471,
+      "paid": 12713192.97,
+      "forecastDec2026": 18413950.14,
+      "forecast2027": 19207938.08,
+      "deltaValue": 703938.08,
+      "deltaPct": 3.8042,
+      "shareDeltaPp": 0.088621
+    },
+    {
+      "name": "Fazenda (Principal da dívida e Emendas impositivas )",
+      "initial2026": 51329000.0,
+      "share2026": 7.589713,
+      "share2027": 7.239606,
+      "updated": 49363905.52,
+      "shareUpdated": 7.239606,
+      "paid": 29646547.46,
+      "forecastDec2026": 42940435.81,
+      "forecast2027": 49229323.64,
+      "deltaValue": -2099676.36,
+      "deltaPct": -4.0906,
+      "shareDeltaPp": -0.350107
+    },
+    {
+      "name": "Tecnologia e inovação",
+      "initial2026": 7034000.0,
+      "share2026": 1.040076,
+      "share2027": 0.898365,
+      "updated": 6125585.0,
+      "shareUpdated": 0.898365,
+      "paid": 1474353.63,
+      "forecastDec2026": 2135472.52,
+      "forecast2027": 6108884.69,
+      "deltaValue": -925115.31,
+      "deltaPct": -13.1521,
+      "shareDeltaPp": -0.141711
+    },
+    {
+      "name": "Educação 25%",
+      "initial2026": 220071000.0,
+      "share2026": 32.540585,
+      "share2027": 32.22,
+      "updated": 220328611.0,
+      "shareUpdated": 32.31293,
+      "paid": 125412932.61,
+      "forecastDec2026": 181649684.14,
+      "forecast2027": 219096000.0,
+      "deltaValue": -975000.0,
+      "deltaPct": -0.443,
+      "shareDeltaPp": -0.320585
+    },
+    {
+      "name": "Assistência Social",
+      "initial2026": 24447000.0,
+      "share2026": 3.614832,
+      "share2027": 3.559634,
+      "updated": 24271684.0,
+      "shareUpdated": 3.559634,
+      "paid": 14037677.84,
+      "forecastDec2026": 20332350.84,
+      "forecast2027": 24205511.59,
+      "deltaValue": -241488.41,
+      "deltaPct": -0.9878,
+      "shareDeltaPp": -0.055198
+    },
+    {
+      "name": "Saúde 15%",
+      "initial2026": 194420000.0,
+      "share2026": 28.747725,
+      "share2027": 29.01,
+      "updated": 197903493.77,
+      "shareUpdated": 29.02411,
+      "paid": 123238651.84,
+      "forecastDec2026": 178500428.26,
+      "forecast2027": 197268000.0,
+      "deltaValue": 2848000.0,
+      "deltaPct": 1.4649,
+      "shareDeltaPp": 0.262275
+    },
+    {
+      "name": "Política para a Mulher e cidadania",
+      "initial2026": 1011000.0,
+      "share2026": 0.149491,
+      "share2027": 0.156112,
+      "updated": 1064467.0,
+      "shareUpdated": 0.156112,
+      "paid": 468646.64,
+      "forecastDec2026": 678793.74,
+      "forecast2027": 1061564.92,
+      "deltaValue": 50564.92,
+      "deltaPct": 5.0015,
+      "shareDeltaPp": 0.006621
+    },
+    {
+      "name": "Meio ambiente e serviços públicos",
+      "initial2026": 39095000.0,
+      "share2026": 5.780744,
+      "share2027": 5.449796,
+      "updated": 37159923.0,
+      "shareUpdated": 5.449796,
+      "paid": 17775248.23,
+      "forecastDec2026": 25745895.25,
+      "forecast2027": 37058613.1,
+      "deltaValue": -2036386.9,
+      "deltaPct": -5.2088,
+      "shareDeltaPp": -0.330948
+    },
+    {
+      "name": "Infra estrutura",
+      "initial2026": 34854000.0,
+      "share2026": 5.153653,
+      "share2027": 5.222078,
+      "updated": 35607206.48,
+      "shareUpdated": 5.222078,
+      "paid": 18453033.71,
+      "forecastDec2026": 26727608.35,
+      "forecast2027": 35510129.79,
+      "deltaValue": 656129.79,
+      "deltaPct": 1.8825,
+      "shareDeltaPp": 0.068425
+    },
+    {
+      "name": "Turismo, indústria e comércio",
+      "initial2026": 6494000.0,
+      "share2026": 0.960229,
+      "share2027": 0.998275,
+      "updated": 6806831.0,
+      "shareUpdated": 0.998275,
+      "paid": 4000603.23,
+      "forecastDec2026": 5794524.52,
+      "forecast2027": 6788273.39,
+      "deltaValue": 294273.39,
+      "deltaPct": 4.5315,
+      "shareDeltaPp": 0.038046
+    },
+    {
+      "name": "Cultura e Esporte",
+      "initial2026": 20552000.0,
+      "share2026": 3.038902,
+      "share2027": 3.71048,
+      "updated": 25300239.0,
+      "shareUpdated": 3.71048,
+      "paid": 17781190.74,
+      "forecastDec2026": 25754502.46,
+      "forecast2027": 25231262.41,
+      "deltaValue": 4679262.41,
+      "deltaPct": 22.7679,
+      "shareDeltaPp": 0.671578
+    },
+    {
+      "name": "Desenvolvimento Rural",
+      "initial2026": 16404000.0,
+      "share2026": 2.425562,
+      "share2027": 2.396423,
+      "updated": 16340228.01,
+      "shareUpdated": 2.396423,
+      "paid": 5609566.61,
+      "forecastDec2026": 8124967.51,
+      "forecast2027": 16295679.29,
+      "deltaValue": -108320.71,
+      "deltaPct": -0.6603,
+      "shareDeltaPp": -0.029139
+    },
+    {
+      "name": "Ordem Pública",
+      "initial2026": 7027000.0,
+      "share2026": 1.039041,
+      "share2027": 1.124719,
+      "updated": 7669000.0,
+      "shareUpdated": 1.124719,
+      "paid": 4981939.1,
+      "forecastDec2026": 7215903.86,
+      "forecast2027": 7648091.84,
+      "deltaValue": 621091.84,
+      "deltaPct": 8.8386,
+      "shareDeltaPp": 0.085678
+    }
+  ],
+  "formulaRules": [
+    {
+      "fixedForecast": true,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": true,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": 32.22
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": 29.01
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    },
+    {
+      "fixedForecast": false,
+      "fixedShare": null
+    }
+  ]
+}

@@ -69,6 +69,10 @@
   gap: 10px;
 }
 
+.filter-grid-pca {
+  grid-template-columns: 1.3fr 1.2fr 1.3fr 0.9fr;
+}
+
 .field label {
   display: block;
   font-size: 11px;
@@ -129,6 +133,19 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 17px;
+}
+
+.metrics-single {
+  grid-template-columns: minmax(280px, 420px);
+}
+
+.consulta-items-table td {
+  vertical-align: top;
+  font-size: 12px;
+}
+
+.consulta-items-table td:nth-child(4) {
+  max-width: 320px;
 }
 
 .metric {

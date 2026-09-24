@@ -1,29 +1,26 @@
 /**
  * Controle Orçamentário - Paulo Afonso
- * Navegação: Consulta | PCA 2027 | Exportação contextual
+ * Navegação: Consulta | Orçamento | Cadastro
  */
 
 import { $ } from './utils.js';
-import { validateDB } from './validation.js';
 import { createRenderer } from './render.js';
-import { createReportExporter } from './report.js';
 import { createPCA } from './pca.js';
+import { createOrcamento } from './orcamento.js';
 
-const DATA_URL = './data/organs.json';
+const PCAS_URL = './data/pcas_enviados.json';
+const ORGANS_URL = './data/organs.json';
+const ORCAMENTO_URL = './data/orcamento.json';
 let currentView = 'consulta';
 
-async function loadOrgans() {
-  const res = await fetch(DATA_URL);
+async function loadJSON(url) {
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error(
-      `Não foi possível carregar ${DATA_URL} (HTTP ${res.status}). Abra o projeto via servidor local (veja docs/README.md).`
+      `Não foi possível carregar ${url} (HTTP ${res.status}). Abra o projeto via servidor local (veja docs/README.md).`
     );
   }
-  const data = await res.json();
-  if (!Array.isArray(data) || data.length === 0) {
-    throw new Error('Base orçamentária vazia ou inválida.');
-  }
-  return data;
+  return res.json();
 }
 
 function showFatal(message) {
@@ -36,53 +33,89 @@ function showFatal(message) {
 
 function setView(view) {
   currentView = view;
-  const consulta = $('viewConsulta');
-  const pca = $('viewPCA');
-  const navConsulta = $('navConsulta');
-  const navPCA = $('navPCA');
+  const views = {
+    consulta: $('viewConsulta'),
+    orcamento: $('viewOrcamento'),
+    pca: $('viewPCA')
+  };
+  const navs = {
+    consulta: $('navConsulta'),
+    orcamento: $('navOrcamento'),
+    pca: $('navPCA')
+  };
   const exportBtn = $('exportBtn');
   const brandSub = $('brandSub');
   const footerSource = $('footerSource');
   const footerNote = $('footerNote');
 
-  const isPCA = view === 'pca';
-  consulta.classList.toggle('hidden', isPCA);
-  pca.classList.toggle('hidden', !isPCA);
+  Object.entries(views).forEach(([key, el]) => {
+    el.classList.toggle('hidden', key !== view);
+  });
+  Object.entries(navs).forEach(([key, el]) => {
+    const active = key === view;
+    el.classList.toggle('active', active);
+    el.setAttribute('aria-current', active ? 'page' : 'false');
+  });
 
-  navConsulta.classList.toggle('active', !isPCA);
-  navPCA.classList.toggle('active', isPCA);
-  navConsulta.setAttribute('aria-current', isPCA ? 'false' : 'page');
-  navPCA.setAttribute('aria-current', isPCA ? 'page' : 'false');
-  exportBtn.textContent = isPCA ? 'Exportar PCA' : 'Exportar';
-  brandSub.textContent = isPCA ? 'Planejamento de contratações • PCA 2027' : 'Base orçamentária consolidada • Agosto/2026';
-  footerSource.textContent = isPCA ? 'PCA Municipal 2027 — base local de demandas e DFDs.' : 'Fonte: Demonstrativos de Despesa Orçamentária — Prefeitura Municipal de Paulo Afonso — Agosto/2026.';
-  footerNote.textContent = isPCA ? 'O módulo de planejamento é independente da execução orçamentária nesta etapa.' : 'Interface de consulta da base orçamentária. A formalização das contratações permanece vinculada aos DFDs e ao fluxo do PCA.';
+  if (view === 'pca') {
+    exportBtn.textContent = 'Exportar Cadastro';
+    brandSub.textContent = 'Cadastro de demandas • PCA 2027';
+    footerSource.textContent = 'PCA Municipal 2027 — base local de demandas e DFDs.';
+    footerNote.textContent = 'Módulo de cadastro independente da consulta e do dashboard orçamentário.';
+  } else if (view === 'orcamento') {
+    exportBtn.textContent = 'Exportar Orçamento';
+    brandSub.textContent = 'Dashboard orçamentário • 2026 × previsão 2027';
+    footerSource.textContent = 'Fonte: planilha Apresentação — despesas até 09/09/2026 e previsão 2027.';
+    footerNote.textContent = 'Diferenças em R$ e % comparam a previsão 2027 com o orçamento inicial de 2026.';
+  } else {
+    exportBtn.textContent = 'Exportar';
+    brandSub.textContent = 'PCAs enviados pelas secretarias • 2027';
+    footerSource.textContent = 'Fonte: PCAs enviados pelas secretarias / órgãos (pasta PCAs_Enviados).';
+    footerNote.textContent = 'Consulta dos valores totais e demandas dos PCAs já enviados. Separação por secretaria e setor.';
+  }
 }
 
 async function main() {
-  let organs;
+  let db;
+  let organCatalog;
+  let orcamentoDb;
   try {
-    organs = await loadOrgans();
+    [db, organCatalog, orcamentoDb] = await Promise.all([
+      loadJSON(PCAS_URL),
+      loadJSON(ORGANS_URL),
+      loadJSON(ORCAMENTO_URL)
+    ]);
   } catch (err) {
     showFatal(err.message || String(err));
     return;
   }
 
+  if (!db?.organs?.length) {
+    showFatal('Nenhum PCA enviado encontrado em data/pcas_enviados.json.');
+    return;
+  }
+  if (!orcamentoDb?.organs?.length) {
+    showFatal('Base orçamentária vazia em data/orcamento.json.');
+    return;
+  }
+
+  const catalog = Array.isArray(organCatalog)
+    ? organCatalog.map((o) => ({ code: o.code, name: o.name }))
+    : db.organs.map((o) => ({ code: o.code, name: o.name }));
+
   const ui = {
     orgSelect: $('orgSelect'),
     unitSelect: $('unitSelect'),
     search: $('search'),
-    availability: $('availability'),
     sort: $('sort'),
     overviewSection: $('overviewSection'),
     localsSection: $('localsSection'),
     detailSection: $('detailSection')
   };
 
-  const state = { expandAll: false };
-  const renderer = createRenderer(organs, ui, state);
-  const report = createReportExporter(organs);
-  const pca = createPCA(organs);
+  const renderer = createRenderer(db, ui);
+  const pca = createPCA(catalog);
+  const orcamento = createOrcamento(orcamentoDb);
 
   ui.orgSelect.addEventListener('change', () => {
     ui.unitSelect.value = 'all';
@@ -90,34 +123,35 @@ async function main() {
     ui.search.value = '';
     renderer.render();
   });
-  ui.unitSelect.addEventListener('change', renderer.render);
-  ui.search.addEventListener('input', renderer.renderDetail);
-  ui.availability.addEventListener('change', renderer.renderDetail);
-  ui.sort.addEventListener('change', renderer.renderDetail);
+  ui.unitSelect.addEventListener('change', () => renderer.render());
+  ui.search.addEventListener('input', () => renderer.renderDetail());
+  ui.sort.addEventListener('change', () => {
+    const prev = ui.orgSelect.value;
+    renderer.populateOrgSelect();
+    if ([...ui.orgSelect.options].some((o) => o.value === prev)) ui.orgSelect.value = prev;
+    renderer.render();
+  });
 
   $('resetBtn').addEventListener('click', () => {
     ui.orgSelect.value = 'all';
     renderer.populateUnitSelect();
     ui.search.value = '';
-    ui.availability.value = 'all';
-    ui.sort.value = 'code';
-    state.expandAll = false;
-    $('expandBtn').textContent = 'Expandir ações';
+    ui.sort.value = 'totalDesc';
+    renderer.populateOrgSelect();
     renderer.render();
-  });
-
-  $('expandBtn').addEventListener('click', () => {
-    state.expandAll = !state.expandAll;
-    $('expandBtn').textContent = state.expandAll ? 'Recolher ações' : 'Expandir ações';
-    renderer.renderDetail();
   });
 
   $('exportBtn').addEventListener('click', () => {
     if (currentView === 'pca') pca.exportCSV();
-    else report.open();
+    else if (currentView === 'orcamento') orcamento.exportCSV();
+    else renderer.exportCSV();
   });
 
   $('navConsulta').addEventListener('click', () => setView('consulta'));
+  $('navOrcamento').addEventListener('click', () => {
+    setView('orcamento');
+    orcamento.render();
+  });
   $('navPCA').addEventListener('click', () => {
     setView('pca');
     pca.render();
@@ -125,9 +159,8 @@ async function main() {
 
   renderer.populateOrgSelect();
   renderer.populateUnitSelect();
-  report.bind();
   pca.bind();
-  validateDB(organs);
+  orcamento.bind();
   renderer.renderOverview();
   renderer.render();
   setView('consulta');

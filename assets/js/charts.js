@@ -204,31 +204,35 @@ export function donutChart(available, unavailable, opts = {}) {
   </div>`;
 }
 
-/** Variação compacta — só itens com variação significativa ou top divergentes. */
+/** Variação compacta — valores em coluna fixa à direita para não sobrepor as barras. */
 export function variationCompact(rows, opts = {}) {
-  const usable = rows.filter((r) => r.value !== null);
+  const usable = rows.filter((r) => r.value !== null && Number.isFinite(r.value));
   if (usable.length < 2) return '';
 
-  const { width = 640, rowH = 22, padL = 118, padR = 56, padT = 6 } = opts;
+  const { width = 720, rowH = 26, padL = 168, padR = 78, padT = 8 } = opts;
   const vals = usable.map((r) => r.value);
   const maxAbs = Math.max(...vals.map((v) => Math.abs(v)), 1);
-  const mid = padL + (width - padL - padR) / 2;
-  const half = (width - padL - padR) / 2;
-  const height = padT + usable.length * rowH + 6;
+  const plotW = width - padL - padR;
+  const mid = padL + plotW / 2;
+  const half = plotW / 2;
+  const height = padT + usable.length * rowH + 8;
+  const valueX = width - 8;
 
   const axis = `<line class="chart-axis" x1="${mid}" y1="${padT}" x2="${mid}" y2="${height - 2}"></line>`;
   const bars = usable
     .map((r, i) => {
-      const y = padT + i * rowH + 10;
-      const w = (Math.abs(r.value) / maxAbs) * half;
+      const y = padT + i * rowH + 12;
+      // leave a small gap so the bar never reaches the value column
+      const w = Math.min(half * 0.92, (Math.abs(r.value) / maxAbs) * half * 0.92);
       const x = r.value >= 0 ? mid : mid - w;
       const fill = r.value >= 0 ? GREEN : RED;
+      const label = shortName(r.label || r.code, 22);
       return `<g class="chart-bar" data-code="${esc(r.code || '')}" role="button" tabindex="0">
-        <text class="chart-label" x="${padL - 8}" y="${y + 3}" text-anchor="end">${esc(codeLabel(r))}</text>
-        <rect x="${x}" y="${y - 5}" width="${Math.max(2, w)}" height="10" rx="4" fill="${fill}"></rect>
-        <text class="chart-value" x="${r.value >= 0 ? mid + w + 6 : mid - w - 6}" y="${y + 3}" text-anchor="${
-          r.value >= 0 ? 'start' : 'end'
-        }">${r.value >= 0 ? '+' : ''}${esc(pctText(r.value))}</text>
+        <text class="chart-label" x="${padL - 10}" y="${y + 3}" text-anchor="end">${esc(label)}</text>
+        <rect x="${x}" y="${y - 5}" width="${Math.max(2, w)}" height="10" rx="4" fill="${fill}">
+          <title>${esc(r.label || r.code)}: ${r.value >= 0 ? '+' : ''}${esc(pctText(r.value))}</title>
+        </rect>
+        <text class="chart-value" x="${valueX}" y="${y + 3}" text-anchor="end">${r.value >= 0 ? '+' : ''}${esc(pctText(r.value))}</text>
       </g>`;
     })
     .join('');

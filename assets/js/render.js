@@ -1,143 +1,111 @@
-/** Renderização da visão geral, locais, escopo e detalhamento. */
+/** Consulta dos PCAs enviados — totais por secretaria e detalhamento de demandas. */
 
-import {
-  $,
-  availabilityClass,
-  clamp,
-  deltaBadge,
-  esc,
-  money,
-  moneyWithDelta,
-  moneyWithShare,
-  normalize,
-  pct,
-  pctText,
-  shareBadge,
-  sharePct,
-  sum,
-  variation
-} from './utils.js';
-import { actionMatches, filterByAvailability, filteredItems, sortActions } from './filters.js';
+import { $, esc, money, normalize, intFmt } from './utils.js';
 
 /**
- * @param {object[]} organs
+ * @param {{ organs: object[], total: number, itemCount: number }} db
  * @param {object} ui
- * @param {{ expandAll: boolean }} state
  */
-export function createRenderer(organs, ui, state) {
-  const {
-    orgSelect,
-    unitSelect,
-    search,
-    availability,
-    sort,
-    overviewSection,
-    localsSection,
-    detailSection
-  } = ui;
-
-  const municipalInitial = sum(organs, 'initial');
+export function createRenderer(db, ui) {
+  const { orgSelect, unitSelect, search, sort, overviewSection, localsSection, detailSection } = ui;
+  const organs = db.organs || [];
 
   function activeOrg() {
     return organs.find((o) => o.code === orgSelect.value) || null;
   }
 
-  function activeUnits() {
-    const o = activeOrg();
-    if (!o) return organs.flatMap((x) => x.units);
-    if (unitSelect.value === 'all') return o.units;
-    return o.units.filter((u) => u.code === unitSelect.value);
+  function sortedOrgans() {
+    const list = [...organs];
+    const mode = sort.value;
+    list.sort((a, b) => {
+      if (mode === 'totalAsc') return a.total - b.total;
+      if (mode === 'name') return a.name.localeCompare(b.name, 'pt-BR');
+      if (mode === 'itemsDesc') return b.itemCount - a.itemCount || b.total - a.total;
+      return b.total - a.total;
+    });
+    return list;
   }
 
-  function scopeRecord() {
+  function scopeTotal() {
     const o = activeOrg();
-    if (!o) {
-      return {
-        initial: sum(organs, 'initial'),
-        updated: sum(organs, 'updated'),
-        balance: sum(organs, 'balance')
-      };
+    if (!o) return db.total;
+    if (unitSelect.value === 'all') return o.total;
+    const sector = (o.sectors || []).find((s) => s.name === unitSelect.value);
+    return sector ? sector.total : o.total;
+  }
+
+  function scopeItems() {
+    const o = activeOrg();
+    if (!o) return organs.flatMap((x) => x.items || []);
+    if (unitSelect.value === 'all') return o.items || [];
+    return (o.items || []).filter((i) => (i.sector || '—') === unitSelect.value);
+  }
+
+  function filteredItems() {
+    const q = normalize(search.value);
+    let items = scopeItems();
+    if (q) {
+      items = items.filter((i) =>
+        normalize(
+          [i.dfdNo, i.sector, i.objectType, i.description, i.company, i.priority, i.period, i.budgetLink].join(' ')
+        ).includes(q)
+      );
     }
-    if (unitSelect.value === 'all') return o;
-    return o.units.find((u) => u.code === unitSelect.value) || o;
+    return items;
   }
 
   function populateOrgSelect() {
     orgSelect.innerHTML =
-      '<option value="all">Todos os órgãos</option>' +
-      organs.map((o) => `<option value="${esc(o.code)}">${esc(o.code)} — ${esc(o.name)}</option>`).join('');
+      '<option value="all">Todas as secretarias</option>' +
+      sortedOrgans()
+        .map((o) => `<option value="${esc(o.code)}">${esc(o.code)} — ${esc(o.name)}</option>`)
+        .join('');
   }
 
   function populateUnitSelect() {
     const o = activeOrg();
     if (!o) {
-      unitSelect.innerHTML = '<option value="all">Todos os locais</option>';
+      unitSelect.innerHTML = '<option value="all">Todos os setores</option>';
       unitSelect.disabled = true;
       return;
     }
     unitSelect.disabled = false;
     const prev = unitSelect.value;
+    const sectors = [...(o.sectors || [])].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     unitSelect.innerHTML =
-      '<option value="all">Todos os locais / unidades</option>' +
-      o.units.map((u) => `<option value="${esc(u.code)}">${esc(u.code)} — ${esc(u.name)}</option>`).join('');
+      '<option value="all">Todos os setores</option>' +
+      sectors.map((s) => `<option value="${esc(s.name)}">${esc(s.name)}</option>`).join('');
     if ([...unitSelect.options].some((x) => x.value === prev)) unitSelect.value = prev;
   }
 
   function renderScope() {
-    const rec = scopeRecord();
-    const p = pct(rec.balance, rec.updated);
-    const committed = rec.updated - rec.balance;
-    const cp = p === null ? null : 100 - p;
-    const shareInit = sharePct(rec.initial, municipalInitial);
-    const vUpdated = variation(rec.initial, rec.updated);
-
-    $('mInitial').textContent = money(rec.initial);
-    $('mUpdated').textContent = money(rec.updated);
-    $('mBalance').textContent = money(rec.balance);
-    $('mCommitted').textContent = money(committed);
-
-    $('mInitialDelta').innerHTML = shareBadge(shareInit, {
-      title: 'Participação na Dotação Inicial municipal'
-    });
-    $('mUpdatedDelta').innerHTML = deltaBadge(vUpdated, {
-      title: 'Variação da Dotação Atualizada em relação à Inicial'
-    });
-    $('mInitialSub').textContent = 'Participação no total inicial municipal';
-    $('mVariation').textContent =
-      vUpdated === 0 ? 'Sem alteração frente à inicial' : 'Variação frente à dotação inicial';
-
-    $('mBalancePct').textContent = `${pctText(p)} da dotação atualizada`;
-    $('mCommittedPct').textContent = `${pctText(cp)} da dotação atualizada`;
-    $('balanceBar').style.width = `${clamp(p)}%`;
-    $('committedBar').style.width = `${clamp(cp)}%`;
+    const total = scopeTotal();
+    const o = activeOrg();
+    $('mInitial').textContent = money(total);
+    if (!o) {
+      $('mInitialSub').textContent = `${intFmt.format(db.itemCount)} itens em ${organs.length} secretarias / órgãos`;
+    } else if (unitSelect.value === 'all') {
+      $('mInitialSub').textContent = `${intFmt.format(o.itemCount)} itens em ${o.name}`;
+    } else {
+      const sector = (o.sectors || []).find((s) => s.name === unitSelect.value);
+      $('mInitialSub').textContent = `${intFmt.format(sector?.itemCount || 0)} itens no setor selecionado`;
+    }
   }
 
   function renderOverview() {
     const body = $('overviewBody');
-    const totalUpdated = sum(organs, 'updated');
-    body.innerHTML = organs
-      .map((o) => {
-        const p = pct(o.balance, o.updated);
-        const cl = availabilityClass(p, o.balance);
-        return `<tr>
+    const list = sortedOrgans();
+    body.innerHTML = list
+      .map(
+        (o) => `<tr>
       <td class="org-cell"><div class="code">${esc(o.code)}</div><div class="name">${esc(o.name)}</div></td>
-      <td class="num">${moneyWithShare(
-        o.initial,
-        sharePct(o.initial, municipalInitial),
-        'Participação na Dotação Inicial municipal'
-      )}</td>
-      <td class="num">${moneyWithDelta(
-        o.updated,
-        variation(o.initial, o.updated),
-        'Variação vs. Dotação Inicial'
-      )}</td>
-      <td class="num">${money(o.balance)}</td>
-      <td class="num"><span class="badge ${cl}">${pctText(p)}</span></td>
+      <td class="num">${money(o.total)}</td>
+      <td class="num">${intFmt.format(o.itemCount)}</td>
       <td class="num"><button class="row-btn open-org" data-code="${esc(o.code)}" type="button">Abrir</button></td>
-    </tr>`;
-      })
+    </tr>`
+      )
       .join('');
-    $('overviewMeta').textContent = `${organs.length} órgãos • ${money(totalUpdated)} de dotação atualizada`;
+    $('overviewMeta').textContent = `${list.length} secretarias • ${money(db.total)} no total`;
     body.querySelectorAll('.open-org').forEach((b) =>
       b.addEventListener('click', () => {
         orgSelect.value = b.dataset.code;
@@ -158,97 +126,28 @@ export function createRenderer(organs, ui, state) {
     localsSection.classList.remove('hidden');
     const cards = $('localCards');
     const allActive = unitSelect.value === 'all';
-    const allP = pct(o.balance, o.updated);
     const blocks = [
       `<button class="local-card ${allActive ? 'active' : ''}" data-unit="all" type="button">
-    <div class="code">TODOS</div><div class="name">Todos os locais / unidades</div>
-    <div class="summary"><span>${money(o.updated)}</span><span>${pctText(allP)} disponível</span></div>
+    <div class="code">TODOS</div><div class="name">Todos os setores</div>
+    <div class="summary"><span>${money(o.total)}</span><span>${intFmt.format(o.itemCount)} itens</span></div>
   </button>`
     ];
-    for (const u of o.units) {
-      const p = pct(u.balance, u.updated);
-      blocks.push(`<button class="local-card ${unitSelect.value === u.code ? 'active' : ''}" data-unit="${esc(
-        u.code
+    for (const s of o.sectors || []) {
+      blocks.push(`<button class="local-card ${unitSelect.value === s.name ? 'active' : ''}" data-unit="${esc(
+        s.name
       )}" type="button">
-      <div class="code">${esc(u.code)}</div><div class="name">${esc(u.name)}</div>
-      <div class="summary"><span>${money(u.updated)}</span><span>${pctText(p)} disponível</span></div>
+      <div class="code">${esc(s.name.slice(0, 18))}</div><div class="name">${esc(s.name)}</div>
+      <div class="summary"><span>${money(s.total)}</span><span>${intFmt.format(s.itemCount)} itens</span></div>
     </button>`);
     }
     cards.innerHTML = blocks.join('');
-    $('localsMeta').textContent = `${o.units.length} ${o.units.length === 1 ? 'unidade' : 'unidades'} no órgão`;
+    $('localsMeta').textContent = `${(o.sectors || []).length} ${(o.sectors || []).length === 1 ? 'setor' : 'setores'}`;
     cards.querySelectorAll('.local-card').forEach((c) =>
       c.addEventListener('click', () => {
         unitSelect.value = c.dataset.unit;
         render();
       })
     );
-  }
-
-  function actionHTML(a, term, unitInitial) {
-    const p = pct(a.balance, a.updated);
-    const cl = availabilityClass(p, a.balance);
-    const shareInit = sharePct(a.initial, unitInitial);
-    const dUpd = variation(a.initial, a.updated);
-    const items = filteredItems(a, term).filter((i) =>
-      filterByAvailability(i.balance, i.updated, availability.value)
-    );
-    return `<article class="action ${state.expandAll ? 'open' : ''}">
-    <button class="action-head" type="button" aria-expanded="${state.expandAll ? 'true' : 'false'}">
-      <div class="action-title">
-        <div class="code">${esc(a.code)}</div>
-        <div class="name">${esc(a.name)}</div>
-      </div>
-      <div class="action-stat initial">
-        <div class="label">Dotação Inicial</div>
-        <div class="value money-delta">
-          <span class="money-delta-val">${money(a.initial)}</span>
-          ${shareBadge(shareInit, { title: 'Participação na Dotação Inicial da unidade' })}
-        </div>
-      </div>
-      <div class="action-stat updated">
-        <div class="label">Dotação Atualizada</div>
-        <div class="value money-delta">
-          <span class="money-delta-val">${money(a.updated)}</span>
-          ${deltaBadge(dUpd, { title: 'Variação vs. Dotação Inicial da ação' })}
-        </div>
-      </div>
-      <div class="action-stat balance">
-        <div class="label">Saldo Disponível</div><div class="value">${money(a.balance)}</div>
-        <span class="badge ${cl}" style="margin-top:5px">${pctText(p)}</span>
-      </div>
-      <div class="chev">⌄</div>
-    </button>
-    <div class="action-body"><div class="items-wrap"><table class="items-table">
-      <thead><tr><th>Especificação</th><th class="num">Dotação Inicial</th><th class="num">Dotação Atualizada</th><th class="num">Saldo Disponível</th></tr></thead>
-      <tbody>${items
-        .map((i) => {
-          const ip = pct(i.balance, i.updated);
-          const icl = availabilityClass(ip, i.balance);
-          return `<tr>
-          <td class="item-spec"><div class="item-title">${esc(i.name)}</div><div class="item-meta">Elemento ${esc(
-            i.code
-          )} • Fonte ${esc(i.source)}</div></td>
-          <td class="num">${moneyWithShare(
-            i.initial,
-            sharePct(i.initial, a.initial),
-            'Participação na Dotação Inicial da ação'
-          )}</td>
-          <td class="num">${moneyWithDelta(
-            i.updated,
-            variation(i.initial, i.updated),
-            'Variação vs. Dotação Inicial da linha'
-          )}</td>
-          <td class="num balance-cell">
-            <div class="balance-line"><span>${money(i.balance)}</span><span class="badge ${icl}">${pctText(
-              ip
-            )}</span></div>
-            <div class="mini-track"><div class="mini-fill" style="width:${clamp(ip)}%"></div></div>
-          </td>
-        </tr>`;
-        })
-        .join('')}</tbody>
-    </table></div></div>
-  </article>`;
   }
 
   function renderDetail() {
@@ -258,51 +157,35 @@ export function createRenderer(organs, ui, state) {
       return;
     }
     detailSection.classList.remove('hidden');
-    const units = activeUnits();
-    const term = normalize(search.value.trim());
-    let shownActions = 0;
-    let shownItems = 0;
-    const groups = [];
-    for (const u of units) {
-      let acts = u.actions
-        .filter((a) => actionMatches(a, term))
-        .filter(
-          (a) =>
-            filterByAvailability(a.balance, a.updated, availability.value) ||
-            a.items.some((i) => filterByAvailability(i.balance, i.updated, availability.value))
-        );
-      acts = sortActions(acts, sort.value);
-      if (!acts.length) continue;
-      shownActions += acts.length;
-      shownItems += acts.reduce(
-        (t, a) =>
-          t +
-          filteredItems(a, term).filter((i) =>
-            filterByAvailability(i.balance, i.updated, availability.value)
-          ).length,
-        0
-      );
-      groups.push(`<section class="unit-group">
-      <div class="unit-header">
-        <div class="unit-header-left"><div class="code">${esc(u.code)}</div><div class="name">${esc(u.name)}</div></div>
-        <div class="unit-total">${money(u.updated)} atualizada • ${pctText(pct(u.balance, u.updated))} disponível</div>
-      </div>
-      ${acts.map((a) => actionHTML(a, term, u.initial)).join('')}
-    </section>`);
+    const items = filteredItems();
+    const total = items.reduce((s, i) => s + (Number(i.total) || 0), 0);
+    $('detailSubtitle').textContent =
+      unitSelect.value === 'all' ? o.name : `${o.name} • ${unitSelect.value}`;
+    $('detailMeta').textContent = `${intFmt.format(items.length)} itens • ${money(total)}`;
+
+    const body = $('actionGroups');
+    const empty = $('emptyState');
+    if (!items.length) {
+      body.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
     }
-    const root = $('actionGroups');
-    root.innerHTML = groups.join('');
-    $('emptyState').classList.toggle('hidden', groups.length > 0);
-    $('detailMeta').textContent = `${shownActions} ${shownActions === 1 ? 'ação' : 'ações'} • ${shownItems} linhas exibidas`;
-    const selectedUnit = unitSelect.value === 'all' ? 'Todos os locais / unidades' : units[0]?.name || '';
-    $('detailSubtitle').textContent = `${o.name} • ${selectedUnit}`;
-    root.querySelectorAll('.action-head').forEach((head) =>
-      head.addEventListener('click', () => {
-        const card = head.closest('.action');
-        card.classList.toggle('open');
-        head.setAttribute('aria-expanded', card.classList.contains('open') ? 'true' : 'false');
-      })
-    );
+    empty.classList.add('hidden');
+    body.innerHTML = items
+      .map(
+        (i) => `<tr>
+      <td><div class="code">${esc(i.dfdNo || '—')}</div></td>
+      <td>${esc(i.sector || '—')}</td>
+      <td>${esc(i.objectType || '—')}</td>
+      <td>${esc(i.description || '—')}</td>
+      <td>${esc(i.company || '—')}</td>
+      <td class="num">${i.quantity ? intFmt.format(i.quantity) : '—'}${i.unitMeasure ? ` ${esc(i.unitMeasure)}` : ''}</td>
+      <td class="num">${money(i.total || 0)}</td>
+      <td>${esc(i.priority || '—')}</td>
+      <td>${esc(i.period || '—')}</td>
+    </tr>`
+      )
+      .join('');
   }
 
   function renderVisibility() {
@@ -313,17 +196,59 @@ export function createRenderer(organs, ui, state) {
   function render() {
     renderVisibility();
     renderScope();
+    if (!activeOrg()) renderOverview();
     renderLocals();
     renderDetail();
   }
 
-  return {
-    activeOrg,
-    activeUnits,
-    populateOrgSelect,
-    populateUnitSelect,
-    renderOverview,
-    renderDetail,
-    render
-  };
+  function exportCSV() {
+    const items = activeOrg() ? filteredItems() : organs.flatMap((o) => o.items || []);
+    const headers = [
+      'Nº do DFD / Item',
+      'Secretaria',
+      'Setor / Departamento',
+      'Tipo de Objeto',
+      'Descrição',
+      'Empresa',
+      'Renovação de Contrato',
+      'Quantidade',
+      'Unidade',
+      'Valor Unitário',
+      'Valor Total',
+      'Prioridade',
+      'Período',
+      'Vinculação Orçamentária'
+    ];
+    const rows = items.map((i) => [
+      i.dfdNo,
+      i.orgName,
+      i.sector,
+      i.objectType,
+      i.description,
+      i.company,
+      i.contractRenewal,
+      i.quantity,
+      i.unitMeasure,
+      i.unitValue,
+      i.total,
+      i.priority,
+      i.period,
+      i.budgetLink
+    ]);
+    const escCell = (v) => {
+      const s = String(v ?? '');
+      return /[;"\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv =
+      '\uFEFF' +
+      [headers, ...rows].map((r) => r.map(escCell).join(';')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `PCAs_Enviados_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  return { populateOrgSelect, populateUnitSelect, render, renderOverview, renderDetail, exportCSV };
 }

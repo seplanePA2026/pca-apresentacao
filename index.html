@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="./assets/css/base.css">
   <link rel="stylesheet" href="./assets/css/components.css">
   <link rel="stylesheet" href="./assets/css/dashboard.css">
+  <link rel="stylesheet" href="./assets/css/orcamento.css">
   <link rel="stylesheet" href="./assets/css/pca.css">
   <link rel="stylesheet" href="./assets/css/report.css">
   <link rel="stylesheet" href="./assets/css/print.css">
@@ -19,22 +20,28 @@
       <img class="brand-logo" src="./Logos/PMPA_logo_01.png" alt="Prefeitura Municipal de Paulo Afonso">
       <div>
         <div class="brand-title">Controle Orçamentário - Paulo Afonso</div>
-        <div class="brand-sub" id="brandSub">Base orçamentária consolidada • Agosto/2026</div>
+        <div class="brand-sub" id="brandSub">PCAs enviados pelas secretarias • 2027</div>
       </div>
     </div>
 
     <nav class="top-nav" aria-label="Navegação principal">
-      <button class="nav-icon active" id="navConsulta" type="button" title="Consulta orçamentária" aria-label="Consulta orçamentária" aria-current="page">
+      <button class="nav-icon active" id="navConsulta" type="button" title="Consulta dos PCAs enviados" aria-label="Consulta dos PCAs enviados" aria-current="page">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 4h7v7H4V4zm9 0h7v7h-7V4zM4 13h7v7H4v-7zm9 0h7v7h-7v-7z" fill="currentColor"/>
         </svg>
         <span>Consulta</span>
       </button>
-      <button class="nav-icon" id="navPCA" type="button" title="PCA — Plano de Contratações Anual" aria-label="PCA — Plano de Contratações Anual">
+      <button class="nav-icon" id="navOrcamento" type="button" title="Orçamento — dashboard 2026 × 2027" aria-label="Orçamento — dashboard 2026 × 2027">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 3h18v2H3V3zm2 4h14v14H5V7zm3 3v8h2v-8H8zm6 2v6h2v-6h-2z" fill="currentColor"/>
+        </svg>
+        <span>Orçamento</span>
+      </button>
+      <button class="nav-icon" id="navPCA" type="button" title="Cadastro de demandas do PCA" aria-label="Cadastro de demandas do PCA">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M4 19h16v2H4v-2zm2-3h2V9H6v7zm5 0h2V5h-2v11zm5 0h2v-5h-2v5z" fill="currentColor"/>
         </svg>
-        <span>PCA</span>
+        <span>Cadastro</span>
       </button>
     </nav>
 
@@ -48,74 +55,41 @@
   <!-- ========== VIEW: CONSULTA ========== -->
   <div id="viewConsulta">
     <section class="panel filters" aria-label="Filtros">
-      <div class="filter-grid">
+      <div class="filter-grid filter-grid-pca">
         <div class="field">
           <label for="orgSelect">Secretaria / Órgão</label>
           <select id="orgSelect" class="control"></select>
         </div>
         <div class="field">
-          <label for="unitSelect">Local / Unidade</label>
+          <label for="unitSelect">Setor / Departamento</label>
           <select id="unitSelect" class="control"></select>
         </div>
         <div class="field">
-          <label for="search">Pesquisar no detalhamento</label>
-          <input id="search" class="control" type="search" placeholder="Ação, elemento, fonte ou descrição…">
-        </div>
-        <div class="field">
-          <label for="availability">Saldo disponível</label>
-          <select id="availability" class="control">
-            <option value="all">Todos</option>
-            <option value="high">75% ou mais</option>
-            <option value="mid">25% a 74,99%</option>
-            <option value="low">Abaixo de 25%</option>
-            <option value="zero">Saldo zero</option>
-          </select>
+          <label for="search">Pesquisar</label>
+          <input id="search" class="control" type="search" placeholder="DFD, descrição, empresa, tipo…">
         </div>
         <div class="field">
           <label for="sort">Ordenação</label>
           <select id="sort" class="control">
-            <option value="code">Por código</option>
-            <option value="updatedDesc">Maior dotação atualizada</option>
-            <option value="balanceDesc">Maior saldo disponível</option>
-            <option value="pctDesc">Maior % disponível</option>
-            <option value="pctAsc">Menor % disponível</option>
+            <option value="totalDesc">Maior valor total</option>
+            <option value="totalAsc">Menor valor total</option>
+            <option value="name">Por secretaria</option>
+            <option value="itemsDesc">Mais itens</option>
           </select>
         </div>
       </div>
       <div class="filter-actions" style="margin-top:10px">
         <button class="btn" id="resetBtn" type="button">Limpar filtros</button>
-        <button class="btn" id="expandBtn" type="button">Expandir ações</button>
       </div>
     </section>
 
-    <section class="metrics" aria-label="Indicadores">
+    <section class="metrics metrics-single" aria-label="Indicadores">
       <article class="metric">
-        <div class="metric-label">Dotação Inicial</div>
+        <div class="metric-label">Total dos PCAs</div>
         <div class="metric-value-row">
           <div class="metric-value" id="mInitial">—</div>
-          <span id="mInitialDelta"></span>
         </div>
-        <div class="metric-sub" id="mInitialSub">Participação no total inicial</div>
-      </article>
-      <article class="metric">
-        <div class="metric-label">Dotação Atualizada</div>
-        <div class="metric-value-row">
-          <div class="metric-value" id="mUpdated">—</div>
-          <span id="mUpdatedDelta"></span>
-        </div>
-        <div class="metric-sub" id="mVariation">Variação vs. inicial</div>
-      </article>
-      <article class="metric">
-        <div class="metric-label">Saldo Disponível</div>
-        <div class="metric-value" id="mBalance">—</div>
-        <div class="metric-sub" id="mBalancePct">—</div>
-        <div class="track"><div class="fill green" id="balanceBar" style="width:0"></div></div>
-      </article>
-      <article class="metric">
-        <div class="metric-label">Parcela não disponível</div>
-        <div class="metric-value" id="mCommitted">—</div>
-        <div class="metric-sub" id="mCommittedPct">—</div>
-        <div class="track"><div class="fill" id="committedBar" style="width:0"></div></div>
+        <div class="metric-sub" id="mInitialSub">Soma geral dos valores estimados enviados</div>
       </article>
     </section>
 
@@ -123,7 +97,7 @@
       <div class="section-head">
         <div>
           <h2>Visão geral por Secretaria / Órgão</h2>
-          <p>Clique em “Abrir” para carregar os locais e o detalhamento daquele órgão.</p>
+          <p>Total estimado de cada PCA enviado. Clique em “Abrir” para ver os setores e as demandas.</p>
         </div>
         <div class="section-meta" id="overviewMeta"></div>
       </div>
@@ -132,10 +106,8 @@
           <thead>
             <tr>
               <th>Secretaria / Órgão</th>
-              <th class="num">Dotação Inicial</th>
-              <th class="num">Dotação Atualizada</th>
-              <th class="num">Saldo Disponível</th>
-              <th class="num">% disponível</th>
+              <th class="num">Total do PCA</th>
+              <th class="num">Itens</th>
               <th></th>
             </tr>
           </thead>
@@ -147,8 +119,8 @@
     <section class="section hidden" id="localsSection">
       <div class="section-head">
         <div>
-          <h2>Locais / Unidades</h2>
-          <p>Os locais abaixo correspondem às unidades orçamentárias existentes no arquivo do órgão selecionado.</p>
+          <h2>Setores / Departamentos</h2>
+          <p>Totais por setor da secretaria selecionada.</p>
         </div>
         <div class="section-meta" id="localsMeta"></div>
       </div>
@@ -158,21 +130,142 @@
     <section class="section hidden" id="detailSection">
       <div class="section-head">
         <div>
-          <h2>Detalhamento das ações</h2>
+          <h2>Demandas do PCA</h2>
           <p id="detailSubtitle">—</p>
         </div>
         <div class="section-meta" id="detailMeta"></div>
       </div>
-      <div class="action-groups" id="actionGroups"></div>
-      <div class="empty hidden" id="emptyState">Nenhuma ação ou linha orçamentária corresponde aos filtros atuais.</div>
+      <div class="overview-wrap">
+        <table class="overview-table consulta-items-table">
+          <thead>
+            <tr>
+              <th>DFD / Item</th>
+              <th>Setor</th>
+              <th>Tipo</th>
+              <th>Descrição</th>
+              <th>Empresa</th>
+              <th class="num">Qtd.</th>
+              <th class="num">Valor total</th>
+              <th>Prioridade</th>
+              <th>Período</th>
+            </tr>
+          </thead>
+          <tbody id="actionGroups"></tbody>
+        </table>
+      </div>
+      <div class="empty hidden" id="emptyState">Nenhuma demanda corresponde aos filtros atuais.</div>
+    </section>
+  </div>
+
+  <!-- ========== VIEW: ORÇAMENTO ========== -->
+  <div id="viewOrcamento" class="hidden orc-app">
+    <section class="orc-metrics" aria-label="Indicadores orçamentários">
+      <article class="metric"><div class="metric-label">Orçamento 2026</div><div class="metric-value" id="orcM2026">—</div><div class="metric-sub">Dotação inicial consolidada</div></article>
+      <article class="metric"><div class="metric-label">Previsão até Dez/2026</div><div class="metric-value" id="orcMDec">—</div><div class="metric-sub">Projeção de execução no exercício</div></article>
+      <article class="metric"><div class="metric-label">Previsão 2027</div><div class="metric-value" id="orcM2027">—</div><div class="metric-sub">Orçamento planejado para o próximo ano</div></article>
+      <article class="metric"><div class="metric-label">Diferença 2027 − 2026</div><div class="metric-value" id="orcMDelta">—</div><div class="metric-sub" id="orcMDeltaSub">—</div></article>
+      <article class="metric"><div class="metric-label">Dota&#231;&#227;o atualizada</div><div class="metric-value" id="orcMUpdated">?</div><div class="metric-sub">Total atualizado das secretarias</div></article>
+      <article class="metric"><div class="metric-label">Despesas pagas</div><div class="metric-value" id="orcMPaid">?</div><div class="metric-sub">Total pago no exerc&#237;cio</div></article>
     </section>
 
+    <section class="panel filters" aria-label="Filtros do orçamento">
+      <div class="filter-grid filter-grid-pca">
+        <div class="field">
+          <label for="orcSearch">Pesquisar secretaria</label>
+          <input id="orcSearch" class="control" type="search" placeholder="Nome da secretaria / órgão…">
+        </div>
+        <div class="field">
+          <label for="orcTrend">Variação 2026 → 2027</label>
+          <select id="orcTrend" class="control">
+            <option value="all">Todas</option>
+            <option value="up">Aumento</option>
+            <option value="down">Redução</option>
+            <option value="flat">Estável (±0,5%)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="orcSort">Ordenação</label>
+          <select id="orcSort" class="control">
+            <option value="deltaDesc">Maior aumento (R$)</option>
+            <option value="deltaAsc">Maior redução (R$)</option>
+            <option value="pctDesc">Maior alta (%)</option>
+            <option value="pctAsc">Maior queda (%)</option>
+            <option value="forecastDesc">Maior previsão 2027</option>
+            <option value="name">Por nome</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end">
+          <button class="btn" id="orcReset" type="button">Limpar filtros</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>Listagem completa — Orçamento das despesas</h2>
+          <p>Clique no l&#225;pis de qualquer c&#233;lula para editar. C&#233;lulas calculadas permitem editar os valores da f&#243;rmula. Os cards mostram os totais gerais, independentemente dos filtros.</p>
+        </div>
+        <div class="section-meta" id="orcListMeta"></div>
+      </div>
+      <div class="overview-wrap">
+        <table class="overview-table orc-table">
+          <thead>
+            <tr>
+              <th>Secretaria / Órgão</th>
+              <th class="num">Orçamento 2026</th>
+              <th class="num">% 2026</th>
+              <th class="num">Dota&#231;&#227;o atualizada</th><th class="num">% atualizado</th><th class="num">Despesas pagas</th><th class="num">Prev. Dez/2026</th>
+              <th class="num">Previsão 2027</th>
+              <th class="num">% 2027</th>
+              <th class="num">Δ R$ 2027−2026</th>
+              <th class="num">Δ %</th>
+              <th class="num">Δ p.p. participação</th>
+            </tr>
+          </thead>
+          <tbody id="orcTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="orc-metrics orc-metrics-rev" aria-label="Receitas e saldo">
+      <article class="metric"><div class="metric-label">Receita prevista 2026</div><div class="metric-value" id="orcR2026">—</div><div class="metric-sub">LOA / previsão orçamentária</div></article>
+      <article class="metric"><div class="metric-label">Arrecadada até 09/09</div><div class="metric-value" id="orcRCollected">—</div><div class="metric-sub" id="orcRCollectedSub">—</div></article>
+      <article class="metric"><div class="metric-label">Receita prevista Dez/2026</div><div class="metric-value" id="orcRDec">—</div><div class="metric-sub">Projeção de arrecadação</div></article>
+      <article class="metric"><div class="metric-label">Receita prevista 2027</div><div class="metric-value" id="orcR2027">—</div><div class="metric-sub">Base da previsão de despesas</div></article>
+      <article class="metric"><div class="metric-label">Saldo até 09/09</div><div class="metric-value" id="orcRBalance">—</div><div class="metric-sub">Receita − despesas pagas</div></article>
+      <article class="metric"><div class="metric-label">Saldo previsto Dez/2026</div><div class="metric-value" id="orcRBalanceDec">—</div><div class="metric-sub">Receita projetada − despesas projetadas</div></article>
+    </section>
+
+    <div class="orc-grid">
+      <section class="panel orc-card">
+        <div class="section-head"><div><h2>Composição 2026</h2><p>Participação de cada secretaria no orçamento inicial.</p></div></div>
+        <div id="orcChart2026"></div>
+      </section>
+      <section class="panel orc-card">
+        <div class="section-head"><div><h2>Composição 2027</h2><p>Participação prevista no orçamento de 2027.</p></div></div>
+        <div id="orcChart2027"></div>
+      </section>
+      <section class="panel orc-card orc-card-wide">
+        <div class="section-head"><div><h2>Variação percentual 2026 → 2027</h2><p>Diferença relativa entre a dotação inicial de 2026 e a previsão para 2027.</p></div><div class="section-meta" id="orcVarMeta"></div></div>
+        <div id="orcChartVar"></div>
+      </section>
+      <section class="panel orc-card">
+        <div class="section-head"><div><h2>Maiores aumentos (R$)</h2><p>Secretarias com maior ganho absoluto na previsão 2027.</p></div></div>
+        <div id="orcTopUp"></div>
+      </section>
+      <section class="panel orc-card">
+        <div class="section-head"><div><h2>Maiores reduções (R$)</h2><p>Secretarias com maior corte absoluto na previsão 2027.</p></div></div>
+        <div id="orcTopDown"></div>
+      </section>
+    </div>
+
     <div class="callout">
-      <strong>Critério dos percentuais:</strong> % disponível = Saldo Disponível ÷ Dotação Atualizada × 100. A parcela não disponível é a diferença entre Dotação Atualizada e Saldo Disponível. Quando a dotação atualizada é zero, o percentual é apresentado como “—” para evitar uma razão sem base.
+      <strong>Inferência:</strong> a diferença em R$ e em % compara a <em>Previsão 2027</em> com o <em>Orçamento 2026</em> (dotação inicial). A variação em pontos percentuais (p.p.) mede se a secretaria ganhou ou perdeu peso no total. Fonte: planilha Apresentação — referência até 09/09/2026.
     </div>
   </div>
 
-  <!-- ========== VIEW: PCA 2027 ========== -->
+  <!-- ========== VIEW: CADASTRO (PCA) ========== -->
   <div id="viewPCA" class="hidden pca-app">
     <section class="panel pca-toolbar" aria-label="Navegação e ações do PCA">
       <div class="pca-tabs">
@@ -259,8 +352,8 @@
   </div>
 
   <footer class="footer">
-    <span id="footerSource">Fonte: Demonstrativos de Despesa Orçamentária — Prefeitura Municipal de Paulo Afonso — Agosto/2026.</span>
-    <span id="footerNote">Interface de consulta da base orçamentária. A formalização das contratações permanece vinculada aos DFDs e ao fluxo do PCA.</span>
+    <span id="footerSource">Fonte: PCAs enviados pelas secretarias / órgãos (pasta PCAs_Enviados).</span>
+    <span id="footerNote">Consulta dos valores totais e demandas dos PCAs já enviados. Separação por secretaria e setor.</span>
   </footer>
 
   <!-- Modal: demanda / item do PCA -->
